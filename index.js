@@ -1,41 +1,61 @@
-require("dotenv").config();
+const {fork} = require('child_process')
 
-const { db_connect, db_close } = require("./db/db");
-const Utils = require("./lib/utils");
-const Automate = require("./lib/automate");
-const { logResultsToJSONFile } = require("./lib/resultsLogger");
-const Logger = require("./lib/logger");
+const Logger = require("./Library/Loggers/MasterProcessLogger")
 
-const main = async () => {
-  try {
-    const filename_jobtypes = process.argv[2] || "jobtypeslist.json";
-    Logger.info(`Reading job types file : ${filename_jobtypes}`);
-    const jobTypes = await Utils.getJobTypesFromFile(filename_jobtypes);
+const SERVER = {
+    name: "SERVER",
+    path: './server'
+}
+const COLLECTOR = {
+    name: "COLLECTOR",
+    path: './collector'
+}
 
-    const filename_keys = process.argv[3] || "keylist.json";
-    Logger.info(`Reading key list file : ${filename_keys}`);
-    const keys = await Utils.getJSONFromFile(filename_keys);
+const PROCESS_MAP = {}
 
-    const keySet = new Set(keys);
-    const automate = new Automate(keySet);
+const start = async () => {
+    Logger.info(`Started MasterProcess with pid ${process.ppid}`);
 
-    Logger.info("Starting...");
-    await db_connect();
-    const response = await automate.collect(jobTypes);
-
-    Logger.info("Logging results summary");
-    await logResultsToJSONFile("summary", new Date(Date.now()), response);
-    Logger.info(response);
-
-    await db_close();
-    Logger.info("Exiting...");
-
-    process.exit();
-  } catch (error) {
-    await db_close();
-    console.error(error);
-    process.exit(1);
-  }
+    startChildProcess(COLLECTOR.name, COLLECTOR.path)
+    startChildProcess(SERVER.name, SERVER.path)
 };
 
-main();
+function startChildProcess(pName, pPath) {
+    const child = fork(pPath);
+
+    PROCESS_MAP[pName] = child;
+
+    Logger.info(`Process ${pName} started with PID : ${child.pid}`);
+
+    child.on("exit", (code, signal) => {
+        if (code !== 0) {
+            Logger.info(`Process ${pName} crashed with code ${code}. Restarting...`)
+            startChildProcess(pName, pPath);
+
+        } else {
+            Logger.info(`Process ${pName} exited with code ${code}.`)
+        }
+    })
+
+    child.on("error", (error) => {
+        Logger.info(`ERROR: Failed to start process ${pName} : ${child.pid}`);
+        Logger.error(error)
+    })
+
+    Logger.info(`setting up message relaying for ${pName}`)
+    child.on("message", (msg) => {
+        if (msg.to) {
+            Logger.info(`Relaying message from ${msg.from} to ${msg.to} : ${msg.code}`)
+            if (pName !== msg.to)
+                PROCESS_MAP[msg.to].send(msg);
+        }
+    })
+}
+
+(() => {
+    try {
+        start();
+    } catch (e) {
+        Logger.error(e)
+    }
+})()
