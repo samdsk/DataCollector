@@ -1,4 +1,4 @@
-const {DATA_PROVIDER} = require("../RequestSenders/RapiAPIRequestSender");
+const {DATA_PROVIDER} = require("../RequestSenders/RapidAPIRequestSender");
 const LanguageUtils = require("../LanguageUtils");
 
 class RapidAPIConverter {
