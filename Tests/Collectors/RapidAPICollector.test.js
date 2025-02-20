@@ -1,7 +1,7 @@
 const Collector = require("../../Library/Collectors/RapidAPICollector");
 const {
     RapidAPIRequestSender,
-} = require("../../Library/RequestSenders/RapiAPIRequestSender");
+} = require("../../Library/RequestSenders/RapidAPIRequestSender");
 const {JobPostController} = require("../../Controllers/JobPostController");
 const JobPostService = require("../../Services/JobPostService");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");

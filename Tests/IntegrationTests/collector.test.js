@@ -3,7 +3,7 @@ const {connect, close, clearDatabase} = require("../db_handler");
 const {
     RapidAPIRequestSender,
     DATA_PROVIDER,
-} = require("../../Library/RequestSenders/RapiAPIRequestSender");
+} = require("../../Library/RequestSenders/RapidAPIRequestSender");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
 const JobPostService = require("../../Services/JobPostService.js");
 const {JobPostController} = require("../../Controllers/JobPostController");

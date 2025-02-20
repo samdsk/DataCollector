@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 const axios = require("axios");
 const {
     DATA_PROVIDER,
-} = require("../../Library/RequestSenders/RapiAPIRequestSender");
+} = require("../../Library/RequestSenders/RapidAPIRequestSender");
 const DataProviderService = require("../../Services/DataProviderService");
 
 jest.mock("axios");

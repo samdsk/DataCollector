@@ -1,5 +1,5 @@
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
-const RapiAPIRequestSender = require("../../Library/RequestSenders/RapiAPIRequestSender");
+const RapiAPIRequestSender = require("../../Library/RequestSenders/RapidAPIRequestSender");
 const example_rapidapi_jobpost = {
     id: "QSxkLGQsZSx0LHQsbywgLEMsYSx0LGUscixpLG4sZywgLEEsZSxyLG8scCxvLHIsdCxvLCAsRixpLHU=",
     title: "Addetto Catering Aeroporto Fiumicino (697941)",

@@ -1,7 +1,7 @@
 const {
     RapidAPIRequestSender,
     DATA_PROVIDER,
-} = require("../../Library/RequestSenders/RapiAPIRequestSender");
+} = require("../../Library/RequestSenders/RapidAPIRequestSender");
 const axios = require("axios");
 require("dotenv").config();
 
