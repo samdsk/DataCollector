@@ -1,4 +1,4 @@
-const JobPostController = require("../../Controllers/JobPostController");
+const {JobPostController} = require("../../Controllers/JobPostController");
 const JobPostService = require("../../Services/JobPostService");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
 

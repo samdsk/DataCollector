@@ -1,5 +1,5 @@
 const Collector = require("../../Library/Collectors/RapidAPICollector");
-const RapidAPIRequestSender = require("../../Library/RequestSenders/RapidAPIRequestSender");
+const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 const {JobPostController} = require("../../Controllers/JobPostController");
 const JobPostService = require("../../Services/JobPostService");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
@@ -97,7 +97,7 @@ describe("Collector: ", () => {
             .spyOn(ResultLogger, "logResultsToJSONFile")
             .mockImplementation(async () => Promise.resolve());
 
-        const mockedSender = new RapidAPIRequestSender();
+        const mockedSender = new RapidAPIRequestSender_v02();
         const controller = new JobPostController(RapidAPIConverter, JobPostService);
         const collector = new Collector(mockedSender, controller);
 
@@ -123,7 +123,7 @@ describe("Collector: ", () => {
             .spyOn(ResultLogger, "logResultsToJSONFile")
             .mockImplementation(async () => Promise.resolve());
 
-        const mockedSender = new RapidAPIRequestSender();
+        const mockedSender = new RapidAPIRequestSender_v02();
         const controller = new JobPostController(RapidAPIConverter, JobPostService);
         const collector = new Collector(mockedSender, controller);
 
@@ -150,7 +150,7 @@ describe("Collector: ", () => {
             .spyOn(ResultLogger, "logResultsToJSONFile")
             .mockImplementation(async () => Promise.resolve());
 
-        const mockedSender = new RapidAPIRequestSender();
+        const mockedSender = new RapidAPIRequestSender_v02();
         const controller = new JobPostController(RapidAPIConverter, JobPostService);
         const collector = new Collector(mockedSender, controller);
 
@@ -169,7 +169,7 @@ describe("Collector: ", () => {
         expect(spyResultLogger).toHaveBeenCalledTimes(2);
     });
     it("search JobPost array of types", async () => {
-        const sender = new RapidAPIRequestSender();
+        const sender = new RapidAPIRequestSender_v02();
         const controller = new JobPostController(RapidAPIConverter, JobPostService);
         const collector = new Collector(sender, controller);
 
@@ -185,7 +185,7 @@ describe("Collector: ", () => {
     });
 
     it("call jobpost controller", async () => {
-        const sender = new RapidAPIRequestSender();
+        const sender = new RapidAPIRequestSender_v02();
         const controller = new JobPostController(RapidAPIConverter, JobPostService);
         const collector = new Collector(sender, controller);
 

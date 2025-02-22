@@ -1,4 +1,4 @@
-const {DATA_PROVIDER} = require("../RequestSenders/RapidAPIRequestSender");
+const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
 const LanguageUtils = require("../LanguageUtils");
 
 class RapidAPIConverter {
@@ -19,8 +19,8 @@ class RapidAPIConverter {
             text: job.description,
             employment_type: job.employmentType,
             links: links,
-            author: DATA_PROVIDER,
-            data_provider: DATA_PROVIDER,
+            author: RapidAPIRequestSender_v02.DATA_PROVIDER,
+            data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
             icu_locale_language_tag: icu_locale,
         };
     }

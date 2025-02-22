@@ -2,9 +2,7 @@ const Automate = require("../../Library/Automators/RapidAPIAutomator");
 const mongoose = require("mongoose");
 
 const axios = require("axios");
-const {
-    DATA_PROVIDER,
-} = require("../../Library/RequestSenders/RapidAPIRequestSender");
+const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 const DataProviderService = require("../../Services/DataProviderService");
 
 jest.mock("axios");
@@ -73,7 +71,7 @@ describe("Automate collecting", () => {
             return Promise.resolve({data: response_example});
         });
 
-        await DataProviderService.create(DATA_PROVIDER);
+        await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
 
         const automate = new Automate(keys, config);
         const response = await automate.collect(jobTypesList, options);
@@ -94,7 +92,7 @@ describe("Automate collecting", () => {
             });
         });
 
-        await DataProviderService.create(DATA_PROVIDER);
+        await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
 
         const automate = new Automate(keys, config);
         const response = await automate.collect(jobTypesList, options);
