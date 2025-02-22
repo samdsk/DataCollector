@@ -1,4 +1,4 @@
-const RapidAPIRequestSender = require("../../Library/RequestSenders/RapidAPIRequestSender");
+const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 const axios = require("axios");
 require("dotenv").config();
 
@@ -29,7 +29,7 @@ const response_example = {
     location: "Italia",
     language: "it_IT",
     job_type: "Example",
-    data_provider: RapidAPIRequestSender.DATA_PROVIDER,
+    data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
     index: 0,
     jobCount: 4,
     hasError: false,
@@ -37,7 +37,7 @@ const response_example = {
 };
 
 describe("SearchRequestSender tests", () => {
-    const sender = new RapidAPIRequestSender();
+    const sender = new RapidAPIRequestSender_v02();
 
     it("should send search request and default settings", async () => {
         const jobType = "Software Engineer";
@@ -65,13 +65,13 @@ describe("SearchRequestSender tests", () => {
                 status: 429,
             },
         });
-
+        let requestedPage = "currentPage"
         try {
-            await sender.sendRequest(jobType);
+            await sender.sendRequest(jobType, requestedPage);
         } catch (error) {
             expect(error.status).toEqual(429);
             expect(error.jobType).toEqual(jobType);
-            expect(error.index).toEqual(0);
+            expect(error.requestedPage).toEqual(requestedPage);
         }
     });
 });

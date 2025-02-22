@@ -53,7 +53,7 @@ class Collector {
         let actualResponseData = [];
 
         let jobCount = 10;
-        let index = RequestOptions?.index || 0;
+        let requestedPage = RequestOptions?.requestedPage || "";
         let insertedCount = 0;
 
         let requestCount = 0;
@@ -62,7 +62,7 @@ class Collector {
         do {
             let data = await this.RequestSender.sendRequest(
                 JOB_TYPE,
-                index,
+                requestedPage,
                 RequestOptions
             );
 
@@ -78,10 +78,9 @@ class Collector {
             if (!searchResults?.location) searchResults.location = data.location;
             if (!searchResults?.language) searchResults.language = data.language;
 
-            index = parseInt(data.index, 10);
-            index += 10;
             jobCount = parseInt(data.jobCount, 10);
             requestCount++;
+            requestedPage = data.nextPage;
         } while (jobCount >= 10 && requestCount < LIMIT);
 
         await this.logResults(searchResults);

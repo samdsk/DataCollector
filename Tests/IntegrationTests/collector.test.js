@@ -1,9 +1,6 @@
 const Collector = require("../../Library/Collectors/RapidAPICollector.js");
 const {connect, close, clearDatabase} = require("../db_handler");
-const {
-    RapidAPIRequestSender,
-    DATA_PROVIDER,
-} = require("../../Library/RequestSenders/RapidAPIRequestSender");
+const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
 const JobPostService = require("../../Services/JobPostService.js");
 const {JobPostController} = require("../../Controllers/JobPostController");
@@ -39,9 +36,10 @@ const response_example = {
     location: "Italia",
     language: "it_IT",
     job_type: "Example",
-    data_provider: DATA_PROVIDER,
+    data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
     index: 0,
     jobCount: 4,
+    nextPage: "nextpage",
     hasError: false,
     errors: [],
 };
@@ -51,7 +49,7 @@ jest.mock("axios");
 describe("Collector Integration Test:", () => {
     beforeAll(async () => {
         await connect();
-        await DataProviderService.create("rapidapi");
+        await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
     });
 
     afterAll(async () => {
@@ -71,7 +69,7 @@ describe("Collector Integration Test:", () => {
             job_type: jobType,
         };
 
-        const requestSender = new RapidAPIRequestSender();
+        const requestSender = new RapidAPIRequestSender_v02();
         const controller = new JobPostController(RapidAPIConverter, JobPostService);
         const collector = new Collector(requestSender, controller);
 

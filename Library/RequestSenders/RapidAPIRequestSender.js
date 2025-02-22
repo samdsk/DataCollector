@@ -1,15 +1,16 @@
 const axios = require("axios");
 require("dotenv").config();
+
+
 /**
  * @param {string} API_KEY Rapid API KEY
  * @param {Object} [options] optional parameters
  * @param {string} options.API_URL RapidAPI URL if not provided will be taken from environment variable
  * @param {string} options.API_HOST RapidAPI HOST URL if not provided will be taken from environment variable
  */
-
-const DATA_PROVIDER = "RapidAPI";
-
 class RapidAPIRequestSender {
+    static DATA_PROVIDER = "RapidAPI";
+
     constructor(API_KEY, options) {
         this.API_KEY = API_KEY || process.env.API_KEY;
         this.API_URL = options?.API_URL || process.env.API_URL;
@@ -56,7 +57,7 @@ class RapidAPIRequestSender {
             response.data.location = location;
             response.data.language = language;
             response.data.job_type = JobType;
-            response.data.data_provider = DATA_PROVIDER;
+            response.data.data_provider = RapidAPIRequestSender.DATA_PROVIDER;
 
             return response.data;
         } catch (error) {
@@ -72,4 +73,4 @@ class RapidAPIRequestSender {
     }
 }
 
-module.exports = {RapidAPIRequestSender, DATA_PROVIDER};
+module.exports = RapidAPIRequestSender;

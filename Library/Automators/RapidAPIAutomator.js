@@ -6,6 +6,7 @@ const Logger = require("../Loggers/CollectorLogger");
 const {JobPostController} = require("../../Controllers/JobPostController");
 const RapidAPIConverter = require("../Converters/RapidAPIConverter");
 const JobPostService = require("../../Services/JobPostService");
+const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
 require("dotenv").config();
 
 class Automate {
@@ -21,14 +22,9 @@ class Automate {
     }
 
     async collect(jobTypesList, options = {}) {
-        const senderOptions = {
-            API_URL: this.config?.API_URL,
-            API_HOST: this.config?.API_HOST,
-        };
-
         const results = [];
 
-        const sender = new RapidAPIRequestSender(senderOptions);
+        const sender = new RapidAPIRequestSender_v02();
         const controller = new JobPostController(RapidAPIConverter, JobPostService);
         const collector = new Collector(sender, controller);
 
@@ -57,10 +53,10 @@ class Automate {
                         this.keys.delete(key);
 
                         Logger.info(
-                            `Last job type ${error.jobType}, last index ${error.index}`
+                            `Last job type ${error.jobType}, last page ${error.requestedPage}`
                         );
 
-                        options.index = error.index;
+                        options.requestedPage = error.requestedPage;
 
                         const indexOfJob = jobTypesList.indexOf(error.jobType);
                         if (indexOfJob > 0) {
