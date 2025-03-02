@@ -100,4 +100,35 @@ describe("Automate collecting", () => {
         expect(response.length).toBe(1);
         expect(response[0].job_type).toBe("type1");
     });
+
+    it("paging", async () => {
+        let response_example_1 = {...response_example};
+        response_example_1.nextPage = "nextpage_2";
+        response_example_1.jobCount = 10;
+
+        let response_example_2 = {...response_example};
+        response_example_2.nextPage = "nextpage_3";
+        response_example_2.jobCount = 5;
+
+        axios.request.mockImplementation(async (data) => {
+            if (data.params.query === "type1" && (data.params?.nextPage === "" || !data.params?.nextPage))
+                return Promise.resolve({data: response_example_1});
+            if (data.params.query === "type1" && data.params.nextPage === "nextpage_2")
+                return Promise.resolve({data: response_example_2});
+
+            return Promise.reject({
+                response: {
+                    status: 429,
+                },
+            });
+        });
+
+        await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
+
+        const automate = new Automate(keys, config);
+        const response = await automate.collect(jobTypesList, options);
+
+        expect(response.length).toBe(1);
+        expect(response[0].job_type).toBe("type1");
+    });
 });

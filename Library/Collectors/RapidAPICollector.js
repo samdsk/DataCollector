@@ -55,50 +55,59 @@ class Collector {
         let jobCount = 10;
         let requestedPage = RequestOptions?.requestedPage || "";
         let insertedCount = 0;
-
         let requestCount = 0;
 
-        // use REQUEST_LIMIT env variable to vary the limit
-        do {
-            let data = await this.RequestSender.sendRequest(
-                JOB_TYPE,
-                requestedPage,
-                RequestOptions
-            );
+        try { // use REQUEST_LIMIT env variable to vary the limit
+            do {
+                let data = await this.RequestSender.sendRequest(
+                    JOB_TYPE,
+                    requestedPage,
+                    RequestOptions
+                );
 
-            insertedCount += await this.insertJobs(
-                data.jobs,
-                JOB_TYPE,
-                data.language
-            );
+                insertedCount += await this.insertJobs(
+                    data.jobs,
+                    JOB_TYPE,
+                    data.language
+                );
 
                 if (process.env.LOG_LEVEL === "debug")
                     actualResponseData.push(data);
 
                 searchResults.jobs = searchResults.jobs.concat(data.jobs);
 
-            if (!searchResults?.location) searchResults.location = data.location;
-            if (!searchResults?.language) searchResults.language = data.language;
+                if (!searchResults?.location) searchResults.location = data.location;
+                if (!searchResults?.language) searchResults.language = data.language;
 
-            jobCount = parseInt(data.jobCount, 10);
-            requestCount++;
-            requestedPage = data.nextPage;
-        } while (jobCount >= 10 && requestCount < LIMIT);
+                jobCount = parseInt(data.jobCount, 10);
+                requestCount++;
 
-        await this.logResults(searchResults);
-        await this.logFullResponse(JOB_TYPE, searchDate, actualResponseData);
+                if (jobCount < 10 || requestCount >= LIMIT)
+                    requestedPage = "";
+                else
+                    requestedPage = data.nextPage;
 
-        // inserting jobs to db
+            } while (jobCount >= 10 && requestCount < LIMIT);
+        } catch (error) {
+            error.receivedItems = jobCount;
+            throw error
+        } finally {
+            await this.logResults(searchResults);
 
-        Logger.info(
-            `Collected: ${
-                searchResults.jobs.length
-            } and inserted ${insertedCount} duplicates:${
-                searchResults.jobs.length - insertedCount
-            } to DB by JobType: ${JOB_TYPE} Location:${
-                searchResults.location
-            } Language:${searchResults.language}`
-        );
+            if (process.env.LOG_LEVEL === "debug")
+                await this.logFullResponse(JOB_TYPE, searchDate, actualResponseData);
+
+            Logger.info(
+                `Collected: ${
+                    searchResults.jobs.length
+                } and inserted ${insertedCount} duplicates:${
+                    searchResults.jobs.length - insertedCount
+                } to DB by JobType: ${JOB_TYPE} Location:${
+                    searchResults.location
+                } Language:${searchResults.language}`
+            );
+        }
+
 
         return {
             job_type: JOB_TYPE,
