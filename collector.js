@@ -5,6 +5,9 @@ const RapidAPIAutomator = require("./Library/Automators/RapidAPIAutomator");
 const {logResultsToJSONFile} = require("./Library/resultsLogger");
 const Logger = require("./Library/Loggers/CollectorLogger")
 
+const SEND_TO = require("./Library/Constants").SERVER;
+const CURRENT_PROCESS = require("./Library/Constants").COLLECTOR;
+
 const CollectorEventEmitter = require("./Library/CollectorEventEmitter");
 const {Scheduler, EVENT, API_TRIGGER, getNextSchedule} = require("./Library/Scheduler");
 const {getJSONFromFile, getJobTypesFromFile} = require("./Library/utils");
@@ -35,12 +38,11 @@ const wrapper = async (keySet, jobList) => {
 
         Logger.info("Logging results summary");
         await logResultsToJSONFile("summary", new Date(Date.now()), response);
-
         Logger.info(JSON.stringify(response));
 
     } catch (error) {
-        Logger.info("Something went wrong in wrapper")
-        Logger.error(error.message)
+        Logger.info("Something went wrong in collector wrapper")
+        Logger.error(error)
     }
 };
 
@@ -51,7 +53,7 @@ async function start() {
         await app();
     } catch (error) {
         Logger.info("Something went wrong in collector start")
-        Logger.error(error.message)
+        Logger.error(error)
         await db_close();
         process.exit(1);
     }
@@ -62,7 +64,7 @@ const handle_api_trigger = (scheduler) => {
         if (msg.to === "COLLECTOR" && msg.code === API_TRIGGER) {
             Logger.info("API trigger received.")
             scheduler.emit(getNextSchedule())
-            return process.send({to: "SERVER", code: 200})
+            return process.send({to: SEND_TO, from: CURRENT_PROCESS, code: 200})
         }
     })
 }
