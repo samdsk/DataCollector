@@ -34,6 +34,7 @@ const app = async () => {
 const wrapper = async (keySet, jobList) => {
     try {
         const automator = new RapidAPIAutomator(keySet);
+        automator.init();
         const response = await automator.collect(jobList);
 
         Logger.info("Logging results summary");

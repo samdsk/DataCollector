@@ -9,7 +9,7 @@ const mongoose = require("mongoose");
 let mongo = null;
 
 const connect = async () => {
-    mongo = await MongoMemoryReplSet.create();
+    mongo = await MongoMemoryServer.create();
     const uri = mongo.getUri();
     await mongoose.connect(uri);
 };

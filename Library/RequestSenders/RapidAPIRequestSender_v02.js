@@ -8,7 +8,7 @@ class RapidAPIRequestSender_v02 {
     static API_HOST = "jobs-api14.p.rapidapi.com"
 
     constructor(API_KEY) {
-        this.API_KEY = API_KEY || process.env.API_KEY;
+        this.API_KEY = API_KEY;
     }
 
     async sendRequest(JobType, requestedPage = "", optionalParams) {
