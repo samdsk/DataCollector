@@ -1,6 +1,6 @@
 const axios = require("axios");
 require("dotenv").config();
-
+const Logger = require("../Loggers/CollectorLogger");
 
 class RapidAPIRequestSender_v02 {
     static DATA_PROVIDER = "RapidAPI_v02";
@@ -39,6 +39,8 @@ class RapidAPIRequestSender_v02 {
         }
 
         try {
+            Logger.debug(`Sending request to ${RapidAPIRequestSender_v02.DATA_PROVIDER} with params: ${JSON.stringify(requestOptions.params)}`);
+
             const response = await axios.request(requestOptions);
             response.data.location = location;
             response.data.language = language;
@@ -47,12 +49,17 @@ class RapidAPIRequestSender_v02 {
 
             return response.data;
         } catch (error) {
+            Logger.debug(`Error receiving ${RapidAPIRequestSender_v02.DATA_PROVIDER} request sender: ${error.message}`);
+            // console.error(error);
+            console.error(error.response?.data?.errors);
+            Logger.error(error);
             if (error.response) {
                 throw {
                     status: error.response.status,
                     jobType: JobType,
                     requestedPage: requestedPage,
                     error: error,
+                    message: error.message
                 };
             } else throw error;
         }

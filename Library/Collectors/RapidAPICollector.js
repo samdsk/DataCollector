@@ -72,8 +72,10 @@ class Collector {
                 data.language
             );
 
-            actualResponseData.push(data);
-            searchResults.jobs = searchResults.jobs.concat(data.jobs);
+                if (process.env.LOG_LEVEL === "debug")
+                    actualResponseData.push(data);
+
+                searchResults.jobs = searchResults.jobs.concat(data.jobs);
 
             if (!searchResults?.location) searchResults.location = data.location;
             if (!searchResults?.language) searchResults.language = data.language;

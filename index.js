@@ -1,13 +1,16 @@
 const {fork} = require('child_process')
 
 const Logger = require("./Library/Loggers/MasterProcessLogger")
+const SERVER_PROCESS = require("./Library/Constants").SERVER;
+const COLLECTOR_PROCESS = require("./Library/Constants").COLLECTOR;
+
 
 const SERVER = {
-    name: "SERVER",
+    name: SERVER_PROCESS,
     path: './server'
 }
 const COLLECTOR = {
-    name: "COLLECTOR",
+    name: COLLECTOR_PROCESS,
     path: './collector'
 }
 
