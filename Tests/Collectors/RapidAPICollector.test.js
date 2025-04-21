@@ -1,6 +1,6 @@
 const Collector = require("../../Library/Collectors/RapidAPICollector");
 const RapidAPIRequestSender = require("../../Library/RequestSenders/RapidAPIRequestSender");
-const {JobPostController} = require("../../Controllers/JobPostController");
+const JobPostHandler = require("../../Library/Handlers/JobPostHandler");
 const JobPostService = require("../../Services/JobPostService");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
 const ResultLogger = require("../../Library/resultsLogger");
@@ -90,7 +90,7 @@ describe("Collector: ", () => {
 
     it("search JobPost by type", async () => {
         const spyController = jest
-            .spyOn(JobPostController.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
             .mockImplementation(async () => Promise.resolve());
 
         const spyResultLogger = jest
@@ -98,7 +98,7 @@ describe("Collector: ", () => {
             .mockImplementation(async () => Promise.resolve());
 
         const mockedSender = new RapidAPIRequestSender();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(mockedSender, controller);
 
         const spySender = jest
@@ -116,7 +116,7 @@ describe("Collector: ", () => {
 
     it("send 2 search requests", async () => {
         const spyController = jest
-            .spyOn(JobPostController.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
             .mockImplementation(async () => Promise.resolve());
 
         const spyResultLogger = jest
@@ -124,7 +124,7 @@ describe("Collector: ", () => {
             .mockImplementation(async () => Promise.resolve());
 
         const mockedSender = new RapidAPIRequestSender();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(mockedSender, controller);
 
         const spySender = jest
@@ -143,7 +143,7 @@ describe("Collector: ", () => {
 
     it("send search requests until request limit reached", async () => {
         const spyController = jest
-            .spyOn(JobPostController.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
             .mockImplementation(async () => Promise.resolve());
 
         const spyResultLogger = jest
@@ -151,7 +151,7 @@ describe("Collector: ", () => {
             .mockImplementation(async () => Promise.resolve());
 
         const mockedSender = new RapidAPIRequestSender();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(mockedSender, controller);
 
         const spySender = jest
@@ -162,7 +162,7 @@ describe("Collector: ", () => {
 
         await collector.searchJobsByType(job_type);
 
-        const LIMIT = 5;
+        const LIMIT = parseInt(process.env.REQUEST_LIMIT, 10);
 
         expect(spySender).toHaveBeenCalledTimes(LIMIT);
         expect(spyController).toHaveBeenCalled();
@@ -170,7 +170,7 @@ describe("Collector: ", () => {
     });
     it("search JobPost array of types", async () => {
         const sender = new RapidAPIRequestSender();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(sender, controller);
 
         const spySearch = jest
@@ -186,11 +186,11 @@ describe("Collector: ", () => {
 
     it("call jobpost controller", async () => {
         const sender = new RapidAPIRequestSender();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(sender, controller);
 
         const spyController = jest
-            .spyOn(JobPostController.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
             .mockImplementation(async () => Promise.resolve());
 
         const job_type = "job_type";

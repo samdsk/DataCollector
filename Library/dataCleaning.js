@@ -85,7 +85,7 @@ const cleanString = (str, replace, list = DEFAULT_CLEANING_PIPELINE) => {
     if (typeof str !== "string")
         throw new Error("First parameter must be a string!");
 
-    for (fn of list) {
+    for (let fn of list) {
         str = fn(str, replace);
     }
 
