@@ -1,6 +1,6 @@
 const Collector = require("../Collectors/RapidAPICollector");
 const Logger = require("../Loggers/CollectorLogger");
-const {JobPostController} = require("../../Controllers/JobPostController");
+const JobPostHandler = require("../Handlers/JobPostHandler");
 const RapidAPIConverter = require("../Converters/RapidAPIConverter");
 const JobPostService = require("../../Services/JobPostService");
 const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
@@ -28,7 +28,7 @@ class Automate {
      */
     init() {
         const sender = new RapidAPIRequestSender_v02();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(sender, controller);
         return {sender, collector};
     }

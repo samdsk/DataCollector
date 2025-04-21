@@ -7,63 +7,113 @@ class RapidAPIRequestSender_v02 {
     static API_URL = "https://jobs-api14.p.rapidapi.com/v2/list";
     static API_HOST = "jobs-api14.p.rapidapi.com"
 
-    constructor(API_KEY) {
-        this.API_KEY = API_KEY;
+    constructor(apiKey) {
+        this.apiKey = apiKey;
     }
 
-    async sendRequest(JobType, requestedPage = "", optionalParams) {
-        const location = optionalParams?.location || process.env.API_LOCATION;
-        const language = optionalParams?.language || process.env.API_LANGUAGE;
-        const employmentTypes =
-            optionalParams?.employmentTypes || "fulltime;parttime;intern;contractor";
+    /**
+     * Build the query parameters for the API request.
+     *
+     * @param {string} jobType - The job type query.
+     * @param {string} requestedPage - The pagination token (if any).
+     * @param {Object} options - Optional parameters.
+     * @returns {Object} The request query parameters.
+     */
+    buildParams(jobType, requestedPage = "", {
+        location = process.env.API_LOCATION,
+        language = process.env.API_LANGUAGE,
+        employmentTypes = "fulltime;parttime;intern;contractor"
+    } = {}) {
+        return {
+            query: jobType,
+            location,
+            autoTranslate: false,
+            remoteOnly: false,
+            employmentTypes,
+            acceptLanguage: language,
+            ...(requestedPage && {nextPage: requestedPage})
+        };
+    }
 
-        const requestOptions = {
+    /**
+     * Build the complete request options object.
+     *
+     * @param {Object} params - The query parameters.
+     * @returns {Object} The request options.
+     */
+    buildRequestOptions(params) {
+        return {
             method: "GET",
             url: RapidAPIRequestSender_v02.API_URL,
-            params: {
-                query: JobType,
-                location: location,
-                autoTranslate: false,
-                remoteOnly: false,
-                employmentTypes: employmentTypes,
-                acceptLanguage: language
-            },
+            params,
             headers: {
-                "X-RapidAPI-Key": this.API_KEY,
+                "X-RapidAPI-Key": this.apiKey,
                 "X-RapidAPI-Host": RapidAPIRequestSender_v02.API_HOST,
             }
-        }
+        };
+    }
 
-        if (requestedPage !== "") {
-            requestOptions.params.nextPage = requestedPage;
-        }
+    /**
+     * Format the API response by injecting additional context.
+     *
+     * @param {Object} data - The raw response data.
+     * @param {string} jobType - The job type query.
+     * @param {string} location - The location used in the request.
+     * @param {string} language - The language used in the request.
+     * @returns {Object} The formatted response data.
+     */
+    formatResponse(data, jobType, location, language) {
+        return {
+            ...data,
+            location,
+            language,
+            job_type: jobType,
+            data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
+        };
+    }
+
+    /**
+     * Format and enrich an error with additional properties.
+     *
+     * @param {Error} error - The original error.
+     * @param {string} jobType - The job type that triggered the error.
+     * @param {string} requestedPage - The pagination token used in the request.
+     * @returns {Error} The enriched error.
+     */
+    formatError(error, jobType, requestedPage) {
+        const formattedError = new Error(error.message);
+        formattedError.status = error?.response?.status;
+        formattedError.jobType = jobType;
+        formattedError.requestedPage = requestedPage;
+        formattedError.originalError = error;
+        return formattedError;
+    }
+
+    /**
+     * Sends a GET request to the RapidAPI endpoint.
+     *
+     * @param {string} jobType - The job type query.
+     * @param {string} [requestedPage=""] - Pagination token if available.
+     * @param {Object} [options={}] - Optional parameters.
+     * @returns {Promise<Object>} The response data.
+     * @throws {Error} Throws an enriched error on request failure.
+     */
+    async sendRequest(jobType, requestedPage = "", options = {}) {
+        const params = this.buildParams(jobType, requestedPage, options);
+        const requestOptions = this.buildRequestOptions(params);
 
         try {
-            Logger.debug(`Sending request to ${RapidAPIRequestSender_v02.DATA_PROVIDER} with params: ${JSON.stringify(requestOptions.params)}`);
-
+            Logger.debug(`Sending request to ${RapidAPIRequestSender_v02.DATA_PROVIDER} with params: ${JSON.stringify(params)}`);
             const response = await axios.request(requestOptions);
-            response.data.location = location;
-            response.data.language = language;
-            response.data.job_type = JobType;
-            response.data.data_provider = RapidAPIRequestSender_v02.DATA_PROVIDER;
-
-            return response.data;
+            return this.formatResponse(response.data, jobType, params.location, params.acceptLanguage);
         } catch (error) {
-            Logger.debug(`Error receiving ${RapidAPIRequestSender_v02.DATA_PROVIDER} request sender: ${error.message}`);
-            // console.error(error);
-            console.error(error.response?.data?.errors);
+            Logger.debug(`Error receiving ${RapidAPIRequestSender_v02.DATA_PROVIDER} request: ${error.message}`);
             Logger.error(error);
             if (error.response) {
-                throw {
-                    status: error.response.status,
-                    jobType: JobType,
-                    requestedPage: requestedPage,
-                    error: error,
-                    message: error.message
-                };
-            } else throw error;
+                throw this.formatError(error, jobType, requestedPage);
+            }
+            throw error;
         }
-
     }
 }
 

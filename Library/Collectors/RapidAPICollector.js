@@ -11,10 +11,11 @@ const LIMIT = process.env.REQUEST_LIMIT || DEFAULT_LIMIT;
 class Collector {
     /**
      * @param {RequestSender} RequestSender a Class with sendRequest method
+     * @param JobPostHandler
      */
-    constructor(RequestSender, JobPostController) {
+    constructor(RequestSender, JobPostHandler) {
         this.RequestSender = RequestSender;
-        this.JobPostController = JobPostController;
+        this.JobPostHandler = JobPostHandler;
     }
 
     async logResults(results) {
@@ -136,7 +137,7 @@ class Collector {
     }
 
     async insertJobs(jobs, job_type, language) {
-        return await this.JobPostController.insertListOfJobs(
+        return await this.JobPostHandler.insertListOfJobs(
             jobs,
             job_type,
             language

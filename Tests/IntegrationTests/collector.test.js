@@ -3,7 +3,7 @@ const {connect, close, clearDatabase} = require("../db_handler");
 const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
 const JobPostService = require("../../Services/JobPostService.js");
-const {JobPostController} = require("../../Controllers/JobPostController");
+const JobPostHandler = require("../../Library/Handlers/JobPostHandler");
 const DataProviderService = require("../../Services/DataProviderService.js");
 const axios = require("axios");
 
@@ -70,7 +70,7 @@ describe("Collector Integration Test:", () => {
         };
 
         const requestSender = new RapidAPIRequestSender_v02();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(requestSender, controller);
 
         axios.request.mockResolvedValue({
