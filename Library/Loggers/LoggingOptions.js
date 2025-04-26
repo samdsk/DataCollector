@@ -3,14 +3,17 @@ const {combine, timestamp, printf, errors, colorize, splat} = winston.format;
 const {formatInTimeZone} = require("date-fns-tz");
 const path = require("path");
 const DailyRotateFile = require("winston-daily-rotate-file");
+require('dotenv').config();
 
 const timeZone = "Europe/Rome";
 
-// Formatter for plain text output (non-JSON)
+const nodeEnv = process.env.NODE_ENV || 'development';
+const logLevel = (process.env.LOG_LEVEL || (nodeEnv === 'production' ? 'info' : 'debug'));
+const logsDir = nodeEnv === 'production' ? 'logs/prod' : (nodeEnv === 'test' ? 'logs/test' : 'logs/dev');
+
 const plainTextFormatter = printf((msg) => {
     const pid = `<PID:${process.pid}>`;
     const svc = `<${msg.service}>`;
-    // Include error details if an error object is logged
     let additionalInfo = "";
     if (msg.response) {
         additionalInfo += `\nResponse Status: ${msg.response.status}`;
@@ -25,95 +28,46 @@ const plainTextFormatter = printf((msg) => {
     return `[${msg.timestamp}] ${pid} ${svc} ${msg.level}: ${msg.message}${additionalInfo}${errorOutput}`;
 });
 
-const getOptions = (service) => {
-    const baseFormat = combine(
-        errors({stack: true}),
-        splat(),
-        timestamp({
-            format: () =>
-                formatInTimeZone(new Date(), timeZone, "yyyy-MM-dd HH:mm:ssXXX"),
-        })
-    );
+const baseFormat = combine(
+    errors({stack: true}),
+    splat(),
+    timestamp({
+        format: () => formatInTimeZone(new Date(), timeZone, "yyyy-MM-dd HH:mm:ssXXX"),
+    })
+);
 
+const createDailyRotateTransport = (service, level, formatter, filenameSuffix) => new DailyRotateFile({
+    dirname: path.join(process.cwd(), logsDir),
+    filename: `${service}_${filenameSuffix}-%DATE%.log`,
+    level,
+    datePattern: "YYYY-MM-DD",
+    zippedArchive: true,
+    maxSize: "20m",
+    maxFiles: "14d",
+    format: formatter,
+});
+
+const getOptions = (service) => {
     return {
-        level: process.env.LOG_LEVEL || "info",
-        defaultMeta: {
-            service: service,
-        },
+        level: logLevel,
+        defaultMeta: {service},
         format: baseFormat,
         transports: [
-            // Console transport using colored output
             new winston.transports.Console({
-                format: combine(
-                    colorize(),
-                    plainTextFormatter
-                )
+                level: logLevel,
+                format: combine(colorize(), plainTextFormatter)
             }),
-            // Daily rotated file for combined logs in plain text (non-JSON)
-            new DailyRotateFile({
-                dirname: path.join(process.cwd(), "logs"),
-                filename: `${service}_combined-%DATE%.log`,
-                datePattern: "YYYY-MM-DD",
-                zippedArchive: true,
-                maxSize: "20m",
-                maxFiles: "14d",
-                // Use the plain text formatter for the file as well:
-                format: plainTextFormatter
-            }),
-            // Daily rotated file for error logs in JSON format
-            new DailyRotateFile({
-                dirname: path.join(process.cwd(), "logs"),
-                filename: `${service}_app-error-%DATE%.log`,
-                level: "error",
-                datePattern: "YYYY-MM-DD",
-                format: combine(
-                    // Optionally filter out non-error logs
-                    winston.format((info) => info.level === "error" ? info : false)(),
-                    timestamp(),
-                    winston.format.json()
-                ),
-                zippedArchive: true,
-                maxSize: "20m",
-                maxFiles: "14d",
-            }),
-            // Daily rotated file for info logs in JSON format
-            new DailyRotateFile({
-                dirname: path.join(process.cwd(), "logs"),
-                filename: `${service}_app-info-%DATE%.log`,
-                level: "info",
-                datePattern: "YYYY-MM-DD",
-                format: combine(
-                    winston.format((info) => info.level === "info" ? info : false)(),
-                    timestamp(),
-                    winston.format.json()
-                ),
-                zippedArchive: true,
-                maxSize: "20m",
-                maxFiles: "14d",
-            }),
+            createDailyRotateTransport(service, "debug", plainTextFormatter, "combined"),
+            createDailyRotateTransport(service, "error", combine(timestamp(), winston.format.json()), "app-error"),
+            createDailyRotateTransport(service, "info", combine(timestamp(), winston.format.json()), "app-info"),
+            createDailyRotateTransport(service, "debug", combine(timestamp(), winston.format.json()), "app-debug"),
         ],
         exceptionHandlers: [
-            new DailyRotateFile({
-                dirname: path.join(process.cwd(), "logs"),
-                filename: `${service}_exception-%DATE%.log`,
-                datePattern: "YYYY-MM-DD",
-                format: plainTextFormatter,
-                zippedArchive: true,
-                maxSize: "20m",
-                maxFiles: "14d",
-            }),
+            createDailyRotateTransport(service, "error", plainTextFormatter, "exception")
         ],
         rejectionHandlers: [
-            new DailyRotateFile({
-                dirname: path.join(process.cwd(), "logs"),
-                filename: `${service}_rejections-%DATE%.log`,
-                datePattern: "YYYY-MM-DD",
-                format: plainTextFormatter,
-                zippedArchive: true,
-                maxSize: "20m",
-                maxFiles: "14d",
-            }),
-        ],
+            createDailyRotateTransport(service, "error", plainTextFormatter, "rejections")
+        ]
     };
 };
 
