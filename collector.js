@@ -22,7 +22,7 @@ const app = async () => {
 
     const Emitter = new CollectorEventEmitter();
 
-    Emitter.on(EVENT, wrapper.bind(null, keySet, jobList));
+    Emitter.on(EVENT, wrapper.bind(null, jobList));
 
     const scheduler = new Scheduler(Emitter);
     scheduler.start(schedulerExpression);
@@ -31,8 +31,11 @@ const app = async () => {
     Logger.info("started successfully")
 };
 
-const wrapper = async (keySet, jobList) => {
+const wrapper = async (jobList) => {
     try {
+        const keys = await getJSONFromFile(process.env.KEYS_FILENAME);
+        const keySet = new Set(keys);
+
         const automator = new RapidAPIAutomator(keySet);
         automator.init();
         const response = await automator.collect(jobList);
