@@ -10,10 +10,13 @@ describe("Annotation Service", () => {
     beforeAll(async () => {
         await connect();
     });
+
     afterAll(async () => {
         await close();
     });
+
     beforeEach(() => jest.restoreAllMocks());
+
     it("creates annotation", async () => {
         const spy = jest
             .spyOn(Annotation, "create")
