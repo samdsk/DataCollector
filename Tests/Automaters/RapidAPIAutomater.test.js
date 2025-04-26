@@ -48,7 +48,11 @@ describe("Automate collecting", () => {
     beforeEach(async () => {
         const collections = await mongoose.connection.db.collections();
         for (const collection of collections) await collection.drop();
+
+        jest.clearAllMocks();
+        jest.resetAllMocks();
     });
+
 
     const keys = new Set(["key1", "key2", "key3"]);
 
@@ -68,13 +72,13 @@ describe("Automate collecting", () => {
 
     it("response should contain 2 elements", async () => {
         axios.request.mockImplementation(async () => {
-            return Promise.resolve({data: response_example});
+            return Promise.resolve({data: JSON.parse(JSON.stringify(response_example))});
         });
 
         await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
 
-        const automate = new Automate(keys, config);
-        const response = await automate.collect(jobTypesList, options);
+        const automate = new Automate(new Set(keys), config);
+        const response = await automate.collect([...jobTypesList], options);
 
         expect(response.length).toBe(2);
         expect(response[0].job_type).toBe("type1");
@@ -84,7 +88,7 @@ describe("Automate collecting", () => {
     it("response should contain only element and jobtype should be type1", async () => {
         axios.request.mockImplementation(async (data) => {
             if (data.params.query === "type1")
-                return Promise.resolve({data: response_example});
+                return Promise.resolve({data: JSON.parse(JSON.stringify(response_example))});
             return Promise.reject({
                 response: {
                     status: 429,
@@ -94,23 +98,25 @@ describe("Automate collecting", () => {
 
         await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
 
-        const automate = new Automate(keys, config);
-        const response = await automate.collect(jobTypesList, options);
+        const automate = new Automate(new Set(keys), config);
+        const response = await automate.collect([...jobTypesList], options);
 
         expect(response.length).toBe(1);
         expect(response[0].job_type).toBe("type1");
     });
 
     it("paging", async () => {
-        let response_example_1 = {...response_example};
+        let response_example_1 = JSON.parse(JSON.stringify(response_example));
         response_example_1.nextPage = "nextpage_2";
         response_example_1.jobCount = 10;
 
-        let response_example_2 = {...response_example};
+        let response_example_2 = JSON.parse(JSON.stringify(response_example));
         response_example_2.nextPage = "nextpage_3";
         response_example_2.jobCount = 5;
 
         axios.request.mockImplementation(async (data) => {
+            console.log("Mocked axios called with params:", data.params);
+
             if (data.params.query === "type1" && (data.params?.nextPage === "" || !data.params?.nextPage))
                 return Promise.resolve({data: response_example_1});
             if (data.params.query === "type1" && data.params.nextPage === "nextpage_2")
@@ -125,8 +131,8 @@ describe("Automate collecting", () => {
 
         await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
 
-        const automate = new Automate(keys, config);
-        const response = await automate.collect(jobTypesList, options);
+        const automate = new Automate(new Set(keys), config);
+        const response = await automate.collect([...jobTypesList], options);
 
         expect(response.length).toBe(1);
         expect(response[0].job_type).toBe("type1");

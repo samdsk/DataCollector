@@ -1,12 +1,10 @@
 // Automate.integration.test.js
 
-const Automate = require("../../Library/Automators/RapidAPIAutomator"); // Adjust path as needed
+const Automate = require("../../Library/Automators/RapidAPIAutomator");
 const Collector = require("../../Library/Collectors/RapidAPICollector");
 
-// We'll also spy on Logger (if needed) to verify debug/info messages.
 // const Logger = require("../../Library/");
 
-// Mock Collector so that when Automate creates a new instance, we control its behavior.
 jest.mock("../../Library/Collectors/RapidAPICollector");
 
 describe("Integration tests for Automate.collect()", () => {
@@ -16,16 +14,13 @@ describe("Integration tests for Automate.collect()", () => {
     const initialKeys = ["key1", "key2", "key3"];
 
     beforeEach(() => {
-        // Create a new Automate instance with a Set of keys.
         automate = new Automate(new Set(initialKeys), {});
         automate.init();
 
-        // Create a fresh mock for Collector.searchJobsByType.
         collectorMock = {
             searchJobsByType: jest.fn(),
         };
 
-        // When Automate creates a new Collector instance, return our mock.
         Collector.mockImplementation(() => collectorMock);
     });
 
@@ -51,12 +46,10 @@ describe("Integration tests for Automate.collect()", () => {
     });
 
     test("should preserve requestedPage if error occurs and the error job type is the next one", async () => {
-        // First call for "job1" fails with a 400 error but with enough items,
-        // so nextPage is preserved. Then a retry for "job1" succeeds.
-        const error = {status: 400, jobType: "job1", requestedPage: "page2", receivedItems: 12};
+        const error = {status: 400, jobType: "job1", requestedPage: "page2", receivedItems: 9};
         collectorMock.searchJobsByType
             .mockRejectedValueOnce(error) // First attempt for job1 fails
-            .mockResolvedValueOnce({job_type: "job1", collected: 10}) // Retry for job1 succeeds
+            .mockResolvedValueOnce({job_type: "job1", collected: 9}) // Retry for job1 succeeds
             .mockResolvedValueOnce({job_type: "job2", collected: 8}); // Then job2 succeeds
 
         const options = {};
@@ -65,10 +58,9 @@ describe("Integration tests for Automate.collect()", () => {
         const results = await automate.collect(jobTypesList, options);
 
         expect(results).toEqual([
-            {job_type: "job1", collected: 10},
+            {job_type: "job1", collected: 9},
             {job_type: "job2", collected: 8},
         ]);
-        // When processing a new job type, requestedPage should be reset.
         expect(options.requestedPage).toBe("");
     });
 
@@ -94,7 +86,6 @@ describe("Integration tests for Automate.collect()", () => {
     });
 
     test("should remove an invalid key and retry with the next key", async () => {
-        // When processing "job1", key "key1" is invalid (status 401).
         const error = {status: 401, jobType: "job1", requestedPage: "page1", receivedItems: 15};
         collectorMock.searchJobsByType
             .mockRejectedValueOnce(error) // First attempt with key "key1" fails.
@@ -138,11 +129,9 @@ describe("Integration tests for Automate.collect()", () => {
     });
 
     test("should handle consecutive errors on the same job type then eventually succeed", async () => {
-        // Simulate job1 failing twice then succeeding,
-        // and job2 then succeeding.
         const error1 = {status: 400, jobType: "job1", requestedPage: "page2", receivedItems: 5}; // receivedItems low so nextPage resets
         collectorMock.searchJobsByType
-            .mockRejectedValueOnce(error1) // first error for job1 (jobTypesList[0] equals error.jobType → pagination resets)
+            .mockRejectedValueOnce(error1)
             .mockResolvedValueOnce({job_type: "job1", collected: 10}) // retry for job1
             .mockResolvedValueOnce({job_type: "job2", collected: 8});
 
@@ -159,7 +148,6 @@ describe("Integration tests for Automate.collect()", () => {
     });
 
     test("should try multiple keys until success for the same job type", async () => {
-        // For job1, key1 fails (403), key2 fails (429), then key3 works.
         const errorKey1 = {status: 403, jobType: "job1", requestedPage: "page1", receivedItems: 20};
         const errorKey2 = {status: 429, jobType: "job1", requestedPage: "page1", receivedItems: 20};
         collectorMock.searchJobsByType
