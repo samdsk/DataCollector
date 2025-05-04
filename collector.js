@@ -12,30 +12,19 @@ const CollectorEventEmitter = require("./Library/CollectorEventEmitter");
 const {Scheduler, EVENT, API_TRIGGER, getNextSchedule} = require("./Library/Scheduler");
 const {getJSONFromFile, getJobTypesFromFile} = require("./Library/utils");
 
-const app = async () => {
-    const schedulerExpression = getNextSchedule()
-
-    const keys = await getJSONFromFile(process.env.KEYS_FILENAME);
-    const keySet = new Set(keys);
-
-    const jobList = await getJobTypesFromFile(process.env.JOBTYPES_FILENAME);
-
-    const Emitter = new CollectorEventEmitter();
-
-    Emitter.on(EVENT, wrapper.bind(null, jobList));
-
-    const scheduler = new Scheduler(Emitter);
-    scheduler.start(schedulerExpression);
-
-    handle_api_trigger(scheduler);
-    Logger.info("started successfully")
-};
-
-const wrapper = async (jobList) => {
+async function rapiAPIJobPostStarter() {
     try {
-        const keys = await getJSONFromFile(process.env.KEYS_FILENAME);
-        const keySet = new Set(keys);
+        const jobList = await getJobTypesFromFile(process.env.JOBTYPES_FILENAME) || [];
+        Logger.info(`Loaded ${jobList.length} job types.`);
+        const keys = await getJSONFromFile(process.env.KEYS_FILENAME) || [];
+        Logger.info(`Loaded ${keys.length} keys.`);
 
+        if (jobList.length === 0 || keys.length === 0) {
+            Logger.info("No job types or keys found. Exiting.");
+            return;
+        }
+
+        const keySet = new Set(keys);
         const automator = new RapidAPIAutomator(keySet);
         automator.init();
         const response = await automator.collect(jobList);
@@ -48,6 +37,19 @@ const wrapper = async (jobList) => {
         Logger.info("Something went wrong in collector wrapper")
         Logger.error(error)
     }
+};
+
+const app = async () => {
+    const schedulerExpression = getNextSchedule()
+    const Emitter = new CollectorEventEmitter();
+
+    Emitter.on(EVENT, () => rapiAPIJobPostStarter());
+
+    const scheduler = new Scheduler(Emitter);
+    scheduler.start(schedulerExpression);
+
+    handle_api_trigger(scheduler);
+    Logger.info("started successfully")
 };
 
 async function start() {
