@@ -11,6 +11,10 @@ class RapidAPIRequestSender_v02 {
         this.apiKey = apiKey;
     }
 
+    setApiKey(apiKey) {
+        this.apiKey = apiKey;
+    }
+
     /**
      * Build the query parameters for the API request.
      *

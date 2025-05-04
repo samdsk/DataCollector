@@ -27,10 +27,9 @@ class Automate {
      * Initializes and returns the necessary dependencies.
      */
     init() {
-        const sender = new RapidAPIRequestSender_v02();
-        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
-        const collector = new Collector(sender, controller);
-        return {sender, collector};
+        this.sender = new RapidAPIRequestSender_v02();
+        this.handler = new JobPostHandler(RapidAPIConverter, JobPostService);
+        this.collector = new Collector(this.sender, this.handler);
     }
 
     /**
@@ -42,36 +41,36 @@ class Automate {
      */
     async collect(jobTypesList, options = {}) {
         const results = [];
-        const {sender, collector} = this.init();
-        let shouldContinue = true;
 
-        while (shouldContinue && this.keys.size > 0 && jobTypesList.length > 0) {
-            for (const key of Array.from(this.keys)) {
+        for (const key of this.keys) {
+            try {
+                this.sender.setApiKey(key);
+
+                for (const jobType of jobTypesList) {
+                    Logger.debug(`key: ${key} - job: ${jobType}`);
+
+                    // Always reset pagination for a new job type attempt.
+                    const response = await this.collector.searchJobsByType(jobType, options);
+
+                    Logger.debug(JSON.stringify(response));
+                    console.log(response);
+                    results.push(response);
+
+                    options.requestedPage = "";
+                }
+                Logger.debug("Exiting the loop, collected all job types");
+                return results;
+            } catch (error) {
                 try {
-                    sender.API_KEY = key;
-
-                    for (const jobType of jobTypesList) {
-                        Logger.debug(`key: ${key} - job: ${jobType}`);
-
-                        // Always reset pagination for a new job type attempt.
-                        const response = await collector.searchJobsByType(jobType, options);
-
-                        Logger.debug(JSON.stringify(response));
-                        console.log(response);
-                        results.push(response);
-
-                        options.requestedPage = "";
-                    }
-
-                    shouldContinue = false;
-                    break; // Break out of the keys loop if all job types succeed.
-                } catch (error) {
-                    // Handle known error codes.
-                    this.handleCollectError(error, jobTypesList, options, key);
-                    // Continue looping: if an error occurs, we set shouldContinue to true.
-                    shouldContinue = true;
+                    // Wait for the exponentially delayed retry before continuing
+                    await this.handleCollectError(error, jobTypesList, options, key);
+                } catch (retryError) {
+                    // If max retries are exceeded, log the message and stop processing
+                    Logger.error(retryError.message);
+                    break; // Exit the loop
                 }
             }
+
         }
 
         return results;
@@ -111,9 +110,36 @@ class Automate {
         const indexOfJob = jobTypesList.indexOf(error.jobType);
         if (indexOfJob > 0) {
             Logger.debug(`Slicing the job types list from index ${indexOfJob}`);
-            // Update jobTypesList to resume from the error-causing job type.
             jobTypesList.splice(0, indexOfJob);
         }
+
+        // Add exponential backoff with increasing delays for retries
+        const maxRetries = 5; // Maximum retry attempts
+        const baseDelay = 1000; // 1-second base delay for retries
+        let retryCount = options.retryCount || 0;
+
+        // Check if retries have exceeded maximum attempts
+        if (retryCount >= maxRetries) {
+            Logger.error(
+                `Max retries (${maxRetries}) reached for key: ${key} and job type: ${error.jobType}. Stopping further attempts.`
+            );
+            this.keys.delete(key); // Optionally remove the key to avoid further failures
+            throw new Error(
+                `Max retry attempts exceeded for key: ${key}, job type: ${error.jobType}. Process halted.`
+            );
+        }
+
+        // Calculate the delay time
+        const delay = baseDelay * Math.pow(2, retryCount); // Exponential backoff
+        Logger.info(`Retrying after ${delay}ms... Attempt: ${retryCount + 1} for key: ${key}`);
+
+        // Wait for the delay and increment retry count
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                options.retryCount = retryCount + 1; // Update retry count in options
+                resolve();
+            }, delay);
+        });
     }
 }
 
