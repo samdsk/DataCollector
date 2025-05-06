@@ -15,7 +15,7 @@ const RapidAPIRequestSender_v02 = require("./Library/RequestSenders/RapidAPIRequ
 const JobPostHandler = require("./Library/Handlers/JobPostHandler");
 const RapidAPIConverter = require("./Library/Converters/RapidAPIConverter");
 const JobPostService = require("./Services/JobPostService");
-const Collector = require("./Library/Collectors/RapidAPICollector");
+const RapidAPICollector = require("./Library/Collectors/RapidAPICollector");
 
 async function rapiAPIJobPostStarter() {
     try {
@@ -31,7 +31,7 @@ async function rapiAPIJobPostStarter() {
 
         const keySet = new Set(keys);
         const sender = new RapidAPIRequestSender_v02();
-        const collector = new Collector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
+        const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
         const automator = new RapidAPIAutomator(keySet, sender, collector);
 
         const response = await automator.collect(jobList);
