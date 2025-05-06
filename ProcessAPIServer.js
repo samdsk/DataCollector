@@ -1,7 +1,6 @@
 require("dotenv").config();
 const Logger = require("./Library/Loggers/ServerLogger")
 const morgan = require("morgan");
-
 const {db_connect, db_close} = require("./Database/db_handler");
 
 const morganMiddleware = morgan(
@@ -15,7 +14,7 @@ const morganMiddleware = morgan(
 );
 
 const express = require("express");
-const server = express();
+const processAPIServer = express();
 
 const api_route = require("./Routes/ApiRouter");
 const login_route = require("./Routes/LoginRouter");
@@ -24,19 +23,19 @@ const ErrorHandler = require("./Middlewares/ErrorHandler");
 const {authentication} = require("./Middlewares/Authentication");
 const PORT = process.env.PORT || 3000;
 
-server.use(morganMiddleware);
-server.use(express.json());
+processAPIServer.use(morganMiddleware);
+processAPIServer.use(express.json());
 
-server.use("/api", authentication, api_route);
-server.use("/login", login_route);
-server.use("/user", user_route);
+processAPIServer.use("/api", authentication, api_route);
+processAPIServer.use("/login", login_route);
+processAPIServer.use("/user", user_route);
 
-server.use(ErrorHandler);
+processAPIServer.use(ErrorHandler);
 
 const start = async () => {
     try {
         await db_connect(process.env.DB_PROD_URL);
-        server.listen(PORT, () =>
+        processAPIServer.listen(PORT, () =>
             Logger.info(`Server is up and running at port: ${PORT}`)
         );
     } catch (error) {

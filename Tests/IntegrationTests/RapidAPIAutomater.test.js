@@ -1,15 +1,20 @@
-const Collector = require("../../Library/Collectors/RapidAPICollector.js");
-const {connect, close, clearDatabase} = require("../db_handler");
+const Automate = require("../../Library/Automators/RapidAPIAutomator");
+const mongoose = require("mongoose");
+const RapidAPICollector = require("../../Library/Collectors/RapidAPICollector");
+
+const axios = require("axios");
+const {
+    DATA_PROVIDER,
+} = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
+const DataProviderService = require("../../Services/DataProviderService");
+const RapidAPIRequestSender = require("../../Library/RequestSenders/RapidAPIRequestSender");
+const JobPostHandler = require("../../Library/Handlers/JobPostHandler");
 const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
-const JobPostService = require("../../Services/JobPostService.js");
-const JobPostHandler = require("../../Library/Handlers/JobPostHandler");
-const DataProviderService = require("../../Services/DataProviderService.js");
-const axios = require("axios");
+const JobPostService = require("../../Services/JobPostService");
+const RapidAPIAutomator = require("../../Library/Automators/RapidAPIAutomator");
 
-require("dotenv").config();
-
-const delete_list = ["texts"];
+jest.mock("axios");
 
 const response_example = {
     jobs: [
@@ -33,61 +38,149 @@ const response_example = {
             ],
         },
     ],
-    location: "Italia",
-    language: "it_IT",
-    job_type: "Example",
-    data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
     index: 0,
     jobCount: 4,
-    nextPage: "nextpage",
     hasError: false,
     errors: [],
 };
 
-jest.mock("axios");
-
-describe("Collector Integration Test:", () => {
+describe("Automate collecting", () => {
     beforeAll(async () => {
-        await connect();
-        await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
+        await mongoose.connect(process.env.DB_URL_TEST);
+        console.log("connected");
     });
 
     afterAll(async () => {
-        await close();
+        await mongoose.connection.close();
     });
 
-    afterEach(async () => {
-        await clearDatabase(delete_list);
+    beforeEach(async () => {
+        const collections = await mongoose.connection.db.collections();
+        for (const collection of collections) await collection.drop();
     });
 
-    it("Collect job", async () => {
-        const jobType = "Software Engineer";
-        const language = "it_IT";
-        const response_example_1 = {
-            ...response_example,
-            language: language,
-            job_type: jobType,
-        };
+    const keys = new Set(["key1", "key2", "key3"]);
 
-        const requestSender = new RapidAPIRequestSender_v02();
-        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
-        const collector = new Collector(requestSender, controller);
+    const jobTypesList = ["type1", "type2"];
 
-        axios.request.mockResolvedValue({
-            data: response_example_1,
+    const config = {
+        API_URL: "http://example.com/api",
+        API_HOST: "http://example.com/",
+    };
+
+    const options = {
+        location: "Test-Location",
+        language: "it-IT",
+        datePosted: "Test-Date",
+        employmentTypes: "Test-Types",
+    };
+
+    it("response should contain 2 elements", async () => {
+        axios.request.mockImplementation(async () => {
+            return Promise.resolve({data: response_example});
         });
 
-        jest
-            .spyOn(collector, "logFullResponse")
-            .mockImplementation(async () => Promise.resolve());
-        jest
-            .spyOn(collector, "logResults")
-            .mockImplementation(async () => Promise.resolve());
+        await DataProviderService.create(DATA_PROVIDER);
 
-        const job_type = "JobType";
+        const keySet = new Set(keys);
+        const sender = new RapidAPIRequestSender_v02();
+        const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
+        const automator = new RapidAPIAutomator(keySet, sender, collector, config);
+        const response = await automator.collect(jobTypesList, options);
 
-        const response = await collector.searchJobsByType(job_type);
+        expect(response.length).toBe(2);
+        expect(response[0].job_type).toBe("type1");
+        expect(response[1].job_type).toBe("type2");
+    });
 
-        expect((await JobPostService.getAll()).length).toBe(1);
+    it("response should contain only element and jobtype should be type1", async () => {
+        axios.request.mockImplementation(async (data) => {
+            if (data.params.query === "type1")
+                return Promise.resolve({data: response_example});
+            return Promise.reject({
+                response: {
+                    status: 429,
+                },
+            });
+        });
+
+        await DataProviderService.create(DATA_PROVIDER);
+
+        const keySet = new Set(keys);
+        const sender = new RapidAPIRequestSender_v02();
+        const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
+        const automator = new RapidAPIAutomator(keySet, sender, collector, config);
+        const response = await automator.collect(jobTypesList, options);
+
+        expect(response.length).toBe(1);
+        expect(response[0].job_type).toBe("type1");
+    });
+});
+
+describe("Error handling", () => {
+    beforeAll(async () => {
+        await mongoose.connect(process.env.DB_URL_TEST);
+    });
+
+    afterAll(async () => {
+        await mongoose.connection.close();
+    });
+
+    beforeEach(async () => {
+        const collections = await mongoose.connection.db.collections();
+        for (const collection of collections) await collection.drop();
+
+        jest.resetAllMocks();
+    });
+
+    const config = {
+        API_URL: "http://example.com/api",
+        API_HOST: "http://example.com/",
+    };
+
+    const options = {
+        location: "Test-Location",
+        language: "it-IT",
+        datePosted: "Test-Date",
+        employmentTypes: "Test-Types",
+    };
+
+
+    it("rimuove la chiave dopo errore 429", async () => {
+        axios.request.mockRejectedValue({response: {status: 429}});
+
+        await DataProviderService.create(DATA_PROVIDER);
+        const sender = new RapidAPIRequestSender_v02();
+        const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
+        const automator = new RapidAPIAutomator(new Set(["key1"]), sender, collector, config);
+        await automator.collect(["type1"], options);
+
+        expect(automator.keys.has("key1")).toBe(false);
+    });
+
+    it("should throw an error if error code is not recognized", async () => {
+        axios.request
+            .mockRejectedValueOnce({response: {status: 500,}, message: "Internal Error"})
+            .mockResolvedValueOnce({data: response_example});
+
+        await DataProviderService.create(DATA_PROVIDER);
+        const sender = new RapidAPIRequestSender_v02();
+        const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
+        const automator = new RapidAPIAutomator(new Set(["key1"]), sender, collector, config);
+
+        await expect(automator.collect(["type1"], options)).rejects.toThrowError();
+    });
+
+    it("gestisce il caso in cui tutte le chiavi falliscono", async () => {
+        axios.request.mockRejectedValue({response: {status: 403}});
+
+        await DataProviderService.create(DATA_PROVIDER);
+        const sender = new RapidAPIRequestSender_v02();
+        const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
+        const automator = new RapidAPIAutomator(new Set(["key1", "key2"]), sender, collector, config);
+        const result = await automator.collect(["type1"], options);
+
+        expect(result.length).toBe(0);
+        expect(automator.keys.size).toBe(0);
     });
 });
