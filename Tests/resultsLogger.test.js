@@ -2,7 +2,7 @@ const {
     logResultsToJSONFile,
     RES_DIR,
     getPathCompatibleStringFromDate,
-} = require("../Library/resultsLogger");
+} = require("../Library/ResultsLogger");
 
 const fs = require("fs").promises;
 

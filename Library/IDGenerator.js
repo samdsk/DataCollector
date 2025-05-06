@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const DataCleaning = require("./dataCleaning");
+const DataCleaning = require("./DataCleaning");
 const Logger = require("./Loggers/CollectorLogger");
 
 /**
