@@ -12,7 +12,7 @@ class RapidAPIAutomator {
      * @param collector
      * @param {*} config - Configuration for API_URL, API_HOST.
      */
-    constructor(keys, sender, collector, config) {
+    constructor(keys, sender, collector, errorHandler, config) {
         if (!(keys instanceof Set)) {
             throw new Error("keys must be a set");
         }
@@ -20,6 +20,7 @@ class RapidAPIAutomator {
         this.config = config;
         this.sender = sender;
         this.collector = collector;
+        this.errorHandler = errorHandler;
     }
 
     /**
@@ -43,7 +44,6 @@ class RapidAPIAutomator {
                     const response = await this.collector.searchJobsByType(jobType, options);
 
                     Logger.debug(JSON.stringify(response));
-                    console.log(response);
                     results.push(response);
 
                     options.requestedPage = "";
