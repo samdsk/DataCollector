@@ -1,27 +1,31 @@
-// Automate.integration.test.js
-
 const Automate = require("../../Library/Automators/RapidAPIAutomator");
 const Collector = require("../../Library/Collectors/RapidAPICollector");
-
-// const Logger = require("../../Library/");
+const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 
 jest.mock("../../Library/Collectors/RapidAPICollector");
+jest.mock("../../Library/RequestSenders/RapidAPIRequestSender_v02");
 
 describe("Integration tests for Automate.collect()", () => {
     let automate;
     let collectorMock;
+    let senderMock;
 
     const initialKeys = ["key1", "key2", "key3"];
 
     beforeEach(() => {
-        automate = new Automate(new Set(initialKeys), {});
-        automate.init();
-
+        // Mock dependencies
+        senderMock = {
+            setApiKey: jest.fn(),
+        };
         collectorMock = {
             searchJobsByType: jest.fn(),
         };
 
+        // Inject mocked dependencies into the automator
+        automate = new Automate(new Set(initialKeys), senderMock, collectorMock, {});
+
         Collector.mockImplementation(() => collectorMock);
+        RapidAPIRequestSender_v02.mockImplementation(() => senderMock);
     });
 
     afterEach(() => {
@@ -65,7 +69,6 @@ describe("Integration tests for Automate.collect()", () => {
     });
 
     test("should reset requestedPage and slice jobTypesList if error job type is not the next one", async () => {
-        // "job1" succeeds, but then "job2" fails.
         collectorMock.searchJobsByType
             .mockResolvedValueOnce({job_type: "job1", collected: 5})
             .mockRejectedValueOnce({status: 400, jobType: "job2", requestedPage: "page3", receivedItems: 8})
@@ -103,7 +106,6 @@ describe("Integration tests for Automate.collect()", () => {
     });
 
     test("should propagate unexpected errors", async () => {
-        // If an error with an unexpected status occurs, it should be rethrown.
         const error = {status: 500, jobType: "job1", requestedPage: "", receivedItems: 0};
         collectorMock.searchJobsByType.mockRejectedValueOnce(error);
 
@@ -151,8 +153,8 @@ describe("Integration tests for Automate.collect()", () => {
         const errorKey1 = {status: 403, jobType: "job1", requestedPage: "page1", receivedItems: 20};
         const errorKey2 = {status: 429, jobType: "job1", requestedPage: "page1", receivedItems: 20};
         collectorMock.searchJobsByType
-            .mockRejectedValueOnce(errorKey1)  // First call fails with key1.
-            .mockRejectedValueOnce(errorKey2)  // Next call fails with key2.
+            .mockRejectedValueOnce(errorKey1) // First call fails with key1.
+            .mockRejectedValueOnce(errorKey2) // Next call fails with key2.
             .mockResolvedValueOnce({job_type: "job1", collected: 12}); // Finally, with key3, job1 succeeds.
 
         const options = {};

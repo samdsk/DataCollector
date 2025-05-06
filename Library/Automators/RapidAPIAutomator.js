@@ -1,9 +1,4 @@
-const Collector = require("../Collectors/RapidAPICollector");
 const Logger = require("../Loggers/CollectorLogger");
-const JobPostHandler = require("../Handlers/JobPostHandler");
-const RapidAPIConverter = require("../Converters/RapidAPIConverter");
-const JobPostService = require("../../Services/JobPostService");
-const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
 require("dotenv").config();
 
 // error codes
