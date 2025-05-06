@@ -10,7 +10,7 @@ const LIMIT = process.env.REQUEST_LIMIT || DEFAULT_LIMIT;
  */
 class Collector {
     /**
-     * @param {RequestSender} RequestSender a Class with sendRequest method
+     * @param {RapidAPIRequestSender_v02} RequestSender a Class with sendRequest method
      * @param JobPostHandler
      */
     constructor(RequestSender, JobPostHandler) {

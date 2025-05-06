@@ -11,6 +11,11 @@ const CURRENT_PROCESS = require("./Library/Constants").COLLECTOR;
 const CollectorEventEmitter = require("./Library/CollectorEventEmitter");
 const {Scheduler, EVENT, API_TRIGGER, getNextSchedule} = require("./Library/Scheduler");
 const {getJSONFromFile, getJobTypesFromFile} = require("./Library/utils");
+const RapidAPIRequestSender_v02 = require("./Library/RequestSenders/RapidAPIRequestSender_v02");
+const JobPostHandler = require("./Library/Handlers/JobPostHandler");
+const RapidAPIConverter = require("./Library/Converters/RapidAPIConverter");
+const JobPostService = require("./Services/JobPostService");
+const Collector = require("./Library/Collectors/RapidAPICollector");
 
 async function rapiAPIJobPostStarter() {
     try {
@@ -25,8 +30,10 @@ async function rapiAPIJobPostStarter() {
         }
 
         const keySet = new Set(keys);
-        const automator = new RapidAPIAutomator(keySet);
-        automator.init();
+        const sender = new RapidAPIRequestSender_v02();
+        const collector = new Collector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
+        const automator = new RapidAPIAutomator(keySet, sender, collector);
+
         const response = await automator.collect(jobList);
 
         Logger.info("Logging results summary");
