@@ -112,7 +112,7 @@ class RapidAPIRequestSender_v02 {
             return this.formatResponse(response.data, jobType, params.location, params.acceptLanguage);
         } catch (error) {
             Logger.debug(`Error receiving ${RapidAPIRequestSender_v02.DATA_PROVIDER} request: ${error.message}`);
-            Logger.error(error);
+            Logger.error(JSON.stringify(error));
             if (error.response) {
                 throw this.formatError(error, jobType, requestedPage);
             }
