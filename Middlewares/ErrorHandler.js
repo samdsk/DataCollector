@@ -25,13 +25,19 @@ const ErrorHandler = (err, req, res, next) => {
         if (err.statusCode) {
             return res.status(err.statusCode).json({
                 success: false,
-                error: err.message,
+                error: {
+                    code: err.statusCode,
+                    message: err.message,
+                }
             });
         }
 
         return res.status(500).json({
             success: false,
-            error: "Internal Server Error",
+            error: {
+                code: 500,
+                message: "Internal Server Error",
+            }
         });
     }
 };

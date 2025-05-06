@@ -1,7 +1,4 @@
-const {
-    RapidAPIRequestSender,
-    DATA_PROVIDER,
-} = require("../../Library/RequestSenders/RapiAPIRequestSender");
+const RapidAPIRequestSender = require("../../Library/RequestSenders/RapidAPIRequestSender");
 const axios = require("axios");
 require("dotenv").config();
 
@@ -32,7 +29,7 @@ const response_example = {
     location: "Italia",
     language: "it_IT",
     job_type: "Example",
-    data_provider: DATA_PROVIDER,
+    data_provider: RapidAPIRequestSender.DATA_PROVIDER,
     index: 0,
     jobCount: 4,
     hasError: false,

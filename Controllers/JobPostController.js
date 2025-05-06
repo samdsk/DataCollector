@@ -1,36 +1,7 @@
-const CollectorLogger = require("../Library/Loggers/CollectorLogger");
 const JobPost = require("../Models/JobPost");
 const {searchMultiple, searchSingle, createSimpleDocument} = require("./CommonControllerMethods");
 const RequestError = require("../Errors/RequestError");
 const JobPostService = require("../Services/JobPostService");
-
-class JobPostController {
-    constructor(Converter, JobPostService) {
-        this.Converter = Converter;
-        this.JobPostService = JobPostService;
-    }
-
-    async insertJob(job, job_type, language) {
-        try {
-            const jobPost = this.Converter.convert(job, job_type, language);
-            return await this.JobPostService.create(jobPost);
-        } catch (err) {
-            CollectorLogger.debug(JSON.stringify(err.message));
-            return null;
-        }
-    }
-
-    async insertListOfJobs(jobs, job_type, language) {
-        let count = 0;
-
-        for (const job of jobs) {
-            const res = await this.insertJob(job, job_type, language);
-            if (res) count++;
-        }
-
-        return count;
-    }
-}
 
 const searchJobPosts = async (req, res, next) => {
     try {
@@ -150,11 +121,9 @@ const deleteJobPost = async (req, res, next) => {
 }
 
 module.exports = {
-    JobPostController,
     searchJobPosts,
     getJobPost,
     createJobPost,
     updateJobPost,
     deleteJobPost
-
 };

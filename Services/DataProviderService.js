@@ -7,7 +7,7 @@ const opts = {runValidators: true};
 
 const getIDByName = async (data_provider) => {
     const res = await DataProvider.findOne({
-        data_provider: removeExcessWhitespace(data_provider.toLowerCase(), " "),
+        data_provider: data_provider,
     }).select("_id");
 
     return res?._id || null;

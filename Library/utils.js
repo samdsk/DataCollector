@@ -1,6 +1,6 @@
 require("dotenv").config();
 const fs = require("fs").promises;
-const JobPostController = require("../Controllers/JobPostController");
+const JobPostHandler = require("../Library/Handlers/JobPostHandler");
 const JobPostService = require("../Services/JobPostService");
 const mongoose = require("mongoose");
 const JobPostConverter = require("./Converters/JobPostConverter");
@@ -45,7 +45,7 @@ const addJobDescriptionsFromFiles = async () => {
 const addJobDescriptionsFromFile = async (filename) => {
     const jobs = await getJSONFromFile(filename);
 
-    const controller = new JobPostController(RapidApiJobPost, JobPostService);
+    const controller = new JobPostHandler(RapidApiJobPost, JobPostService);
 
     const additionalDetails = {
         searchJobType: jobs.jobType,

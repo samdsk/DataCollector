@@ -1,72 +1,74 @@
 const winston = require("winston");
-const {combine, timestamp, printf, align, errors, json} = winston.format;
+const {combine, timestamp, printf, errors, colorize, splat} = winston.format;
 const {formatInTimeZone} = require("date-fns-tz");
+const path = require("path");
+const DailyRotateFile = require("winston-daily-rotate-file");
+require('dotenv').config();
 
 const timeZone = "Europe/Rome";
 
-const errorFilter = winston.format((info, opts) => {
-    return info.level === "error" ? info : false;
+const nodeEnv = process.env.NODE_ENV || 'development';
+const logLevel = (process.env.LOG_LEVEL || (nodeEnv === 'production' ? 'info' : 'debug'));
+const logsDir = nodeEnv === 'production' ? 'logs/prod' : (nodeEnv === 'test' ? 'logs/test' : 'logs/dev');
+
+const plainTextFormatter = printf((msg) => {
+    const pid = `<PID:${process.pid}>`;
+    const svc = `<${msg.service}>`;
+    let additionalInfo = "";
+    if (msg.response) {
+        additionalInfo += `\nResponse Status: ${msg.response.status}`;
+        if (msg.response.data) {
+            additionalInfo += `\nResponse Data: ${JSON.stringify(msg.response.data)}`;
+        }
+    }
+    if (msg.request) {
+        additionalInfo += `\nRequest: ${JSON.stringify(msg.request._header || msg.request)}`;
+    }
+    const errorOutput = msg.stack ? `\nStack Trace:\n${msg.stack}` : "";
+    return `[${msg.timestamp}] ${pid} ${svc} ${msg.level}: ${msg.message}${additionalInfo}${errorOutput}`;
 });
 
-const infoFilter = winston.format((info, opts) => {
-    return info.level === "info" ? info : false;
+const baseFormat = combine(
+    errors({stack: true}),
+    splat(),
+    timestamp({
+        format: () => formatInTimeZone(new Date(), timeZone, "yyyy-MM-dd HH:mm:ssXXX"),
+    })
+);
+
+const createDailyRotateTransport = (service, level, formatter, filenameSuffix) => new DailyRotateFile({
+    dirname: path.join(process.cwd(), logsDir),
+    filename: `${service}_${filenameSuffix}-%DATE%.log`,
+    level,
+    datePattern: "YYYY-MM-DD",
+    zippedArchive: true,
+    maxSize: "20m",
+    maxFiles: "14d",
+    format: formatter,
 });
 
 const getOptions = (service) => {
     return {
-        levels: winston.config.syslog.levels,
-        level: process.env.LOG_LEVEL || "info",
-        defaultMeta: {
-            service: service,
-        },
-        format: combine(
-            errors({stack: true}),
-            timestamp({
-                format: () =>
-                    formatInTimeZone(new Date(), timeZone, "yyyy-MM-dd HH:mm:ssXXX"),
-            }),
-            json(),
-            printf(
-                (msg) => {
-                    const pid = `<PID:${process.pid}>`
-                    const service = `<${msg.service}>`
-                    const level = `${msg.level}`
-                    return `[${msg.timestamp}] ${pid} ${service} ${level}: ${msg.message}`
-                }
-            )
-        ),
+        level: logLevel,
+        defaultMeta: {service},
+        format: baseFormat,
         transports: [
-            new winston.transports.Console(),
-            new winston.transports.File({
-                dirname: "logs",
-                filename: `/logs/${service}_combined.log`,
+            new winston.transports.Console({
+                level: logLevel,
+                format: combine(colorize(), plainTextFormatter)
             }),
-            new winston.transports.File({
-                filename: `/logs/${service}_app-error.log`,
-                dirname: "logs",
-                level: "error",
-                format: combine(errorFilter(), timestamp(), json()),
-            }),
-            new winston.transports.File({
-                filename: `/logs/${service}_app-info.log`,
-                dirname: "logs",
-                level: "info",
-                format: combine(infoFilter(), timestamp(), json()),
-            }),
+            createDailyRotateTransport(service, "debug", plainTextFormatter, "combined"),
+            createDailyRotateTransport(service, "error", combine(timestamp(), winston.format.json()), "app-error"),
+            createDailyRotateTransport(service, "info", combine(timestamp(), winston.format.json()), "app-info"),
+            createDailyRotateTransport(service, "debug", combine(timestamp(), winston.format.json()), "app-debug"),
         ],
         exceptionHandlers: [
-            new winston.transports.File({
-                dirname: "logs",
-                filename: `/logs/${service}_exception.log`,
-            }),
+            createDailyRotateTransport(service, "error", plainTextFormatter, "exception")
         ],
         rejectionHandlers: [
-            new winston.transports.File({
-                dirname: "logs",
-                filename: `/logs/${service}_rejections.log`,
-            }),
-        ],
+            createDailyRotateTransport(service, "error", plainTextFormatter, "rejections")
+        ]
     };
-}
+};
 
-module.exports = getOptions
+module.exports = getOptions;
