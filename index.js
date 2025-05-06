@@ -7,11 +7,11 @@ const COLLECTOR_PROCESS = require("./Library/Constants").COLLECTOR;
 
 const SERVER = {
     name: SERVER_PROCESS,
-    path: './server'
+    path: './ProcessAPIServer'
 }
 const COLLECTOR = {
     name: COLLECTOR_PROCESS,
-    path: './collector'
+    path: './ProcessCollector'
 }
 
 const PROCESS_MAP = {}
