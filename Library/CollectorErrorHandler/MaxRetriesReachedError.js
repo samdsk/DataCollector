@@ -7,7 +7,7 @@ class MaxRetriesReachedError extends Error {
         this.name = this.constructor.name;
         this.retryCount = retryCount;
         this.lastError = lastError;
-        this.statusCode = 500;
+        this.statusCode = lastError?.statusCode || 500;
 
         // Capture stack trace excluding the constructor call
         Error.captureStackTrace(this, this.constructor);
