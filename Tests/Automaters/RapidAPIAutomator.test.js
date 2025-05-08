@@ -1,6 +1,7 @@
 const Automate = require("../../Library/Automators/RapidAPIAutomator");
 const Collector = require("../../Library/Collectors/RapidAPICollector");
 const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
+const RetryWithDelay = require("../../Library/CollectorErrorHandler/RetryWithDelay");
 
 jest.mock("../../Library/Collectors/RapidAPICollector");
 jest.mock("../../Library/RequestSenders/RapidAPIRequestSender_v02");
@@ -22,7 +23,7 @@ describe("Integration tests for Automate.collect()", () => {
         };
 
         // Inject mocked dependencies into the automator
-        automate = new Automate(new Set(initialKeys), senderMock, collectorMock, {});
+        automate = new Automate(new Set(initialKeys), senderMock, collectorMock, new RetryWithDelay(5, [429, 401, 403]), {});
 
         Collector.mockImplementation(() => collectorMock);
         RapidAPIRequestSender_v02.mockImplementation(() => senderMock);
@@ -42,10 +43,7 @@ describe("Integration tests for Automate.collect()", () => {
 
         const results = await automate.collect(jobTypesList, options);
 
-        expect(results).toEqual([
-            {job_type: "job1", collected: 5},
-            {job_type: "job2", collected: 6},
-        ]);
+        expect(results).toEqual([{job_type: "job1", collected: 5}, {job_type: "job2", collected: 6},]);
         expect(options.requestedPage).toBe(""); // should be reset after each job type
     });
 
@@ -61,10 +59,7 @@ describe("Integration tests for Automate.collect()", () => {
 
         const results = await automate.collect(jobTypesList, options);
 
-        expect(results).toEqual([
-            {job_type: "job1", collected: 9},
-            {job_type: "job2", collected: 8},
-        ]);
+        expect(results).toEqual([{job_type: "job1", collected: 9}, {job_type: "job2", collected: 8},]);
         expect(options.requestedPage).toBe("");
     });
 
@@ -80,11 +75,10 @@ describe("Integration tests for Automate.collect()", () => {
 
         const results = await automate.collect(jobTypesList, options);
 
-        expect(results).toEqual([
-            {job_type: "job1", collected: 5},
-            {job_type: "job2", collected: 7},
-            {job_type: "job3", collected: 9},
-        ]);
+        expect(results).toEqual([{job_type: "job1", collected: 5}, {job_type: "job2", collected: 7}, {
+            job_type: "job3",
+            collected: 9
+        },]);
         expect(options.requestedPage).toBe("");
     });
 
@@ -107,13 +101,13 @@ describe("Integration tests for Automate.collect()", () => {
 
     test("should propagate unexpected errors", async () => {
         const error = {status: 500, jobType: "job1", requestedPage: "", receivedItems: 0};
-        collectorMock.searchJobsByType.mockRejectedValueOnce(error);
+        collectorMock.searchJobsByType.mockRejectedValue(error);
 
         const options = {};
         const jobTypesList = ["job1"];
 
-        await expect(automate.collect(jobTypesList, options)).rejects.toEqual(error);
-    });
+        await expect(automate.collect(jobTypesList, options)).rejects.toThrowError('Maximum retries of 5 have been reached.');
+    }, 20000);
 
     test("should return empty results when jobTypesList is empty", async () => {
         const options = {};
@@ -142,10 +136,7 @@ describe("Integration tests for Automate.collect()", () => {
 
         const results = await automate.collect(jobTypesList, options);
 
-        expect(results).toEqual([
-            {job_type: "job1", collected: 10},
-            {job_type: "job2", collected: 8},
-        ]);
+        expect(results).toEqual([{job_type: "job1", collected: 10}, {job_type: "job2", collected: 8},]);
         expect(options.requestedPage).toBe("");
     });
 
