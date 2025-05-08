@@ -1,9 +1,9 @@
 require("dotenv").config();
 const fs = require("fs").promises;
-const JobPostHandler = require("../Library/Handlers/JobPostHandler");
-const JobPostService = require("../Services/JobPostService");
+const JobPostHandler = require("../Handlers/JobPostHandler");
+const JobPostService = require("../../Services/JobPostService");
 const mongoose = require("mongoose");
-const JobPostConverter = require("./Converters/JobPostConverter");
+const JobPostConverter = require("../Converters/JobPostConverter");
 
 const getJobTypesFromFile = async (filename) => {
     const res = await getJSONFromFile(filename);

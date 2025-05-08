@@ -1,12 +1,12 @@
 const schedule = require("node-schedule");
-const Logger = require("./Loggers/CollectorLogger");
+const Logger = require("../Loggers/CollectorLogger");
 const EVENT = "collect";
 const API_TRIGGER = "api_trigger";
 
 class Scheduler {
     /**
      *
-     * @param {EventEmmitter} emitter
+     * @param {CollectorEventEmitter} emitter
      */
     constructor(emitter) {
         this.eventEmitter = emitter;
