@@ -1,18 +1,12 @@
 const Logger = require("../Loggers/CollectorLogger");
+const MaxRetriesReachedError = require("../CollectorErrorHandler/MaxRetriesReachedError");
 require("dotenv").config();
 
-// error codes
-const KEY_DELETE_ERROR_CODES = [429, 403, 401];
-const ERROR_CODES = [...KEY_DELETE_ERROR_CODES, 400];
 
 class RapidAPIAutomator {
-    /**
-     * @param {Set} keys - Set of API keys.
-     * @param sender
-     * @param collector
-     * @param {*} config - Configuration for API_URL, API_HOST.
-     */
-    constructor(keys, sender, collector, errorHandler, config) {
+    static KEY_DELETE_ERROR_CODES = [429, 403, 401];
+
+    constructor(keys, sender, collector, retryHandler, config) {
         if (!(keys instanceof Set)) {
             throw new Error("keys must be a set");
         }
@@ -20,70 +14,62 @@ class RapidAPIAutomator {
         this.config = config;
         this.sender = sender;
         this.collector = collector;
-        this.errorHandler = errorHandler;
+        this.retryHandler = retryHandler;
+        this.retryHandler.setExcludedErrorCodes(RapidAPIAutomator.KEY_DELETE_ERROR_CODES);
     }
 
-    /**
-     * Collects job data for each job type using the provided API keys.
-     *
-     * @param {Array} jobTypesList - List of job types to collect data for.
-     * @param {Object} options - Options that include pagination state.
-     * @returns {Array} results - Collected job responses.
-     */
     async collect(jobTypesList, options = {}) {
         const results = [];
 
         for (const key of this.keys) {
             try {
                 this.sender.setApiKey(key);
-
-                for (const jobType of jobTypesList) {
-                    Logger.debug(`key: ${key} - job: ${jobType}`);
-
-                    // Always reset pagination for a new job type attempt.
-                    const response = await this.collector.searchJobsByType(jobType, options);
-
-                    Logger.debug(JSON.stringify(response));
-                    results.push(response);
-
-                    options.requestedPage = "";
-                }
-                Logger.debug("Exiting the loop, collected all job types");
-                return results;
+                return await this.collectWithKey(key, jobTypesList, options);
             } catch (error) {
+                if (error instanceof MaxRetriesReachedError) {
+                    throw error;
+                }
                 this.handleCollectError(error, jobTypesList, options, key);
             }
-
         }
 
         return results;
     }
 
-    /**
-     * Handles errors from the collect process.
-     *
-     * - Removes invalid API keys.
-     * - Updates the pagination (nextPage) based on the job type that caused the error.
-     * - Slices the job types list to resume processing from the errored job type.
-     *
-     * @param {Object} error - Error object with status, jobType, etc.
-     * @param {Array} jobTypesList - Current list of job types.
-     * @param {Object} options - Options that include pagination state.
-     * @param {string} key - The API key used during the failed request.
-     */
-    handleCollectError(error, jobTypesList, options, key) {
-        if (!ERROR_CODES.includes(error.status)) {
-            throw error;
+    async collectWithKey(key, jobTypesList, options) {
+        const results = [];
+
+        for (const jobType of jobTypesList) {
+            Logger.debug(`key: ***${key.slice(-4)} - job: ${jobType}`);
+
+            const context = {key, jobType, options};
+            await this.retryHandler.execute(
+                async () => {
+                    const response = await this.collector.searchJobsByType(jobType, options);
+                    Logger.debug(JSON.stringify(response));
+                    results.push(response);
+                    options.requestedPage = "";
+                },
+                context
+            );
         }
 
-        if (KEY_DELETE_ERROR_CODES.includes(error.status)) {
-            Logger.debug(`The key ${key} isn't valid anymore! Removing it.`);
+        Logger.debug("Collected all job types, exiting...");
+        return results;
+    }
+
+    handleCollectError(error, jobTypesList, options, key) {
+        if (RapidAPIAutomator.KEY_DELETE_ERROR_CODES.includes(error.status)) {
+            Logger.debug(`The key ***${key.slice(-4)} isn't valid anymore! Removing it.`);
             this.keys.delete(key);
         }
 
         Logger.info(`Last job type ${error.jobType}, last page ${error.requestedPage}`);
 
-        // If the errored job type is the next one to process, preserve its pagination state.
+        this.updatePaginationState(error, jobTypesList, options);
+    }
+
+    updatePaginationState(error, jobTypesList, options) {
         if (jobTypesList[0] === error.jobType) {
             options.requestedPage = error?.receivedItems < 10 ? "" : error.requestedPage;
         } else {
