@@ -109,7 +109,6 @@ class Collector {
             );
         }
 
-
         return {
             job_type: JOB_TYPE,
             searchDate: searchDate,
