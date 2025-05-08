@@ -85,7 +85,7 @@ describe('RetryWithDelay', () => {
 
         it('should throw MaxRetriesReachedError after max attempts', async () => {
             const operation = jest.fn().mockRejectedValue(new Error('persistent failure'));
-            retryInstance = new RetryWithDelay(2);
+            retryInstance = new RetryWithDelay(3);
 
             await expect(retryInstance.execute(operation))
                 .rejects
@@ -97,7 +97,7 @@ describe('RetryWithDelay', () => {
             const operation = jest.fn().mockRejectedValue(new Error('failure'));
             const sleepSpy = jest.spyOn(RetryWithDelay, 'sleep');
 
-            retryInstance = new RetryWithDelay(2);
+            retryInstance = new RetryWithDelay(3);
 
             try {
                 await retryInstance.execute(operation);
@@ -133,6 +133,96 @@ describe('RetryWithDelay', () => {
         it('should return true for non-excluded error codes', () => {
             const retry = new RetryWithDelay(3, [400]);
             expect(retry.shouldRetry({status: 500})).toBe(true);
+        });
+    });
+
+    describe("Error Window", () => {
+        let retryHandler;
+        let now;
+
+        beforeEach(() => {
+            now = Date.now();
+            jest.spyOn(Date, 'now').mockImplementation(() => now);
+            retryHandler = new RetryWithDelay(3, [], null, 5000); // 5 second window
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it("should reset error count after error window", async () => {
+            const operation = jest.fn()
+                .mockRejectedValueOnce({status: 500, message: "error 1"})
+                .mockRejectedValueOnce({status: 500, message: "error 2"})
+                .mockRejectedValueOnce({status: 500, message: "error 3"})
+                .mockRejectedValueOnce({status: 500, message: "error 4"})
+                .mockResolvedValueOnce("success");
+
+            // First attempt
+            await expect(retryHandler.execute(operation)).rejects.toThrow();
+
+            // Move time forward beyond error window
+            now += 6000;
+
+            // Next attempt should start with fresh count
+            const result = await retryHandler.execute(operation);
+            expect(result).toBe("success");
+            expect(retryHandler.consecutiveErrors).toBe(1);
+        });
+
+        it("should maintain error count within window", async () => {
+            const operation = jest.fn()
+                .mockRejectedValue({status: 500});
+
+            // First attempt
+            await expect(retryHandler.execute(operation)).rejects.toThrow();
+
+            // Move time forward but stay within window
+            now += 2000;
+
+            // Second attempt should consider previous errors
+            await expect(retryHandler.execute(operation))
+                .rejects
+                .toThrow(MaxRetriesReachedError);
+
+            expect(retryHandler.consecutiveErrors).toBe(4);
+        });
+
+        it("should handle multiple error windows", async () => {
+            const operation = jest.fn()
+                .mockRejectedValueOnce({status: 500})
+                .mockRejectedValueOnce({status: 500})
+                .mockRejectedValueOnce({status: 500})
+                .mockRejectedValueOnce({status: 500})
+                .mockResolvedValueOnce("success");
+
+            // First window
+            await expect(retryHandler.execute(operation)).rejects.toThrow();
+
+            // Move to next error window
+            now += 6000;
+
+            const result = await retryHandler.execute(operation);
+            expect(result).toBe("success");
+            expect(retryHandler.consecutiveErrors).toBe(1);
+        });
+
+        it("should handle rapid successive errors", async () => {
+            const operation = jest.fn()
+                .mockRejectedValue({status: 500});
+
+            // First set of attempts
+            await expect(retryHandler.execute(operation)).rejects.toThrow();
+
+            // Small time advancement
+            now += 100;
+
+            // Should still be within error window
+            await expect(retryHandler.execute(operation))
+                .rejects
+                .toThrow(MaxRetriesReachedError);
+
+            expect(retryHandler.consecutiveErrors).toBe(4);
         });
     });
 });
