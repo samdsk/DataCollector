@@ -10,7 +10,35 @@ describe("Scheduler:", () => {
         jest.useFakeTimers();
         scheduler = new Scheduler(emitter);
         const keySet = new Set(["key1", "key2", "key3"]);
-        automator = new RapidAPIAutomator(keySet, {});
+
+        // Mock dependencies
+        const sender = {
+            setApiKey: jest.fn(),
+            sendRequest: jest.fn()
+        };
+
+        const collector = {
+            searchJobsByType: jest.fn(),
+            logFullResponse: jest.fn(),
+            logResults: jest.fn()
+        };
+
+        const retryHandler = {
+            execute: jest.fn(),
+            setExcludedErrorCodes: jest.fn()
+        };
+
+        automator = new RapidAPIAutomator(
+            keySet,
+            sender,
+            collector,
+            retryHandler,
+            {
+                API_URL: "test-url",
+                API_HOST: "test-host"
+            }
+        );
+
     });
 
     afterEach(() => jest.clearAllTimers());
