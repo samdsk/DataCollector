@@ -1,5 +1,5 @@
 const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
-const LanguageUtils = require("../LanguageUtils");
+const LanguageUtils = require("../Utils/LanguageUtils");
 
 class RapidAPIConverter {
     static convert(job, job_type, language) {

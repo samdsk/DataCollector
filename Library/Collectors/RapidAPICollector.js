@@ -1,4 +1,4 @@
-const ResultLogger = require("../ResultsLogger");
+const ResultLogger = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
 require("dotenv").config();
 
