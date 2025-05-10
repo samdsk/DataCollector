@@ -16,7 +16,7 @@ const JobPostHandler = require("./Library/Handlers/JobPostHandler");
 const RapidAPIConverter = require("./Library/Converters/RapidAPIConverter");
 const JobPostService = require("./Services/JobPostService");
 const RapidAPICollector = require("./Library/Collectors/RapidAPICollector");
-const {ProcessTypes} = require("./Library/Processes/ProcessConstants");
+const RetryWithDelay = require("./Library/CollectorErrorHandler/RetryWithDelay");
 
 async function rapiAPIJobPostStarter() {
     try {
@@ -33,7 +33,8 @@ async function rapiAPIJobPostStarter() {
         const keySet = new Set(keys);
         const sender = new RapidAPIRequestSender_v02();
         const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
-        const automator = new RapidAPIAutomator(keySet, sender, collector);
+        const retryWithDelay = new RetryWithDelay();
+        const automator = new RapidAPIAutomator(keySet, sender, collector, retryWithDelay);
 
         const response = await automator.collect(jobList);
 
