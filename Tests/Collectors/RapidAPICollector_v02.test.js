@@ -3,7 +3,7 @@ const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPI
 const JobPostHandler = require("../../Library/Handlers/JobPostHandler");
 const JobPostService = require("../../Services/JobPostService");
 const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
-const ResultLogger = require("../../Library/resultsLogger");
+const ResultLogger = require("../../Library/Loggers/ResultsLogger");
 
 require("dotenv").config();
 

@@ -107,12 +107,11 @@ class RapidAPIRequestSender_v02 {
         const requestOptions = this.buildRequestOptions(params);
 
         try {
-            Logger.debug(`Sending request to ${RapidAPIRequestSender_v02.DATA_PROVIDER} with params: ${JSON.stringify(params)}`);
+            Logger.debug(`${RapidAPIRequestSender_v02.DATA_PROVIDER}: Sending request with params: ${JSON.stringify(params)}`);
             const response = await axios.request(requestOptions);
             return this.formatResponse(response.data, jobType, params.location, params.acceptLanguage);
         } catch (error) {
-            Logger.debug(`Error receiving ${RapidAPIRequestSender_v02.DATA_PROVIDER} request: ${error.message}`);
-            Logger.error(JSON.stringify(error));
+            Logger.error(`${RapidAPIRequestSender_v02.DATA_PROVIDER}: Receiving : ${JSON.stringify(error)}`);
             if (error.response) {
                 throw this.formatError(error, jobType, requestedPage);
             }

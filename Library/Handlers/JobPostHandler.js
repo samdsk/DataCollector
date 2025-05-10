@@ -11,7 +11,7 @@ class JobPostHandler {
             const jobPost = this.Converter.convert(job, job_type, language);
             return await this.JobPostService.create(jobPost);
         } catch (err) {
-            CollectorLogger.debug(JSON.stringify(err.message));
+            CollectorLogger.error("JobPostHandler: Something went wrong during insert " + JSON.stringify(err.message));
             return null;
         }
     }

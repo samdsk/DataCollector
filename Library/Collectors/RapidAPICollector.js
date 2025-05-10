@@ -1,4 +1,4 @@
-const ResultLogger = require("../resultsLogger");
+const ResultLogger = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
 require("dotenv").config();
 
@@ -108,7 +108,6 @@ class Collector {
                 } Language:${searchResults.language}`
             );
         }
-
 
         return {
             job_type: JOB_TYPE,

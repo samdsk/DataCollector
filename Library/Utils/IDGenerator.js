@@ -1,6 +1,6 @@
 const crypto = require("crypto");
-const DataCleaning = require("./dataCleaning");
-const Logger = require("./Loggers/CollectorLogger");
+const DataCleaning = require("./DataCleaning");
+const Logger = require("../Loggers/CollectorLogger");
 
 /**
  * Generates a string without spaces and special characters using title, company and location fields of a jobpost

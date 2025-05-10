@@ -2,7 +2,7 @@ const {DataProvider} = require("../Models/DataProvider");
 const TextService = require("./TextService");
 const TransactionWrapper = require("../Database/TransactionWrapper");
 const ValidationError = require("../Errors/ValidationError");
-const {removeExcessWhitespace} = require("../Library/dataCleaning");
+const {removeExcessWhitespace} = require("../Library/Utils/DataCleaning");
 const opts = {runValidators: true};
 
 const getIDByName = async (data_provider) => {
