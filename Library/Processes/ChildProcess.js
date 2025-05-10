@@ -46,8 +46,12 @@ class ChildProcess {
     }
 
     sendMessage(message) {
-        if (this.process) {
+        try {
             this.process.send(message);
+            return true;
+        } catch (error) {
+            Logger.error(`Failed to send message to ${this.config.name}: ${error.message}`);
+            return false;
         }
     }
 }

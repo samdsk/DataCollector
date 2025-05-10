@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest --runInBand --coverage --verbose",
     "start": "node index.js",
+    "debug": "node --inspect index.js",
     "find-circular-deps": "madge . -c"
   },
   "author": "Sameera Kaluwaduge (https://kaluwaduge.com)",
