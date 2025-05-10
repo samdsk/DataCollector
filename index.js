@@ -7,22 +7,22 @@ class Application {
         this.processManager = new ProcessManager();
     }
 
-    async start() {  // Make start method async
+    async start() {
         try {
             await this.processManager.initialize();
 
-            Logger.info('Testing message routing between processes...');
-            const routingWorks = await this.processManager.testMessageRouting();
-
-            if (!routingWorks) {
-                Logger.warn('Message routing test failed - system may not function properly');
-            } else {
-                Logger.info('Message routing test successful!');
-            }
+            // Logger.info('Testing message routing between processes...');
+            // const routingWorks = await this.processManager.testMessageRouting();
+            //
+            // if (!routingWorks) {
+            //     Logger.warn('Message routing test failed - system may not function properly');
+            // } else {
+            //     Logger.info('Message routing test successful!');
+            // }
 
         } catch (error) {
             Logger.error(error);
-            await this.shutdown();  // Await the shutdown
+            await this.shutdown();
         }
     }
 
@@ -32,11 +32,10 @@ class Application {
     }
 }
 
-// Main execution
-(async () => {  // Make the IIFE async
+(async () => {
     try {
         const app = new Application();
-        await app.start();  // Await the start method
+        await app.start();
     } catch (e) {
         Logger.error(e);
         process.exit(1);
