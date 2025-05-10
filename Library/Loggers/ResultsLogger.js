@@ -1,5 +1,4 @@
 const fs = require("fs");
-
 const RES_DIR = "./results/";
 
 const getPathCompatibleStringFromDate = (date) => {
