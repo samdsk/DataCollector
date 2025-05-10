@@ -12,4 +12,4 @@ const ProcessTypes = {
 };
 
 
-export {ProcessTypes};
+module.exports = {ProcessTypes};
