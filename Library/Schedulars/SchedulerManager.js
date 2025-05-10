@@ -1,6 +1,6 @@
 const CollectorEventEmitter = require("./CollectorEventEmitter");
 const {API_TRIGGER, EVENT, getNextSchedule, Scheduler} = require("./Scheduler");
-const {ProcessTypes} = require("../Processes/ProcessConstants");
+const {ProcessTypes} = require("../../Processes/ProcessConstants");
 
 const Logger = require("../Loggers/CollectorLogger");
 const CURRENT_PROCESS = ProcessTypes.COLLECTOR.name

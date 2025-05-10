@@ -1,4 +1,4 @@
-const Logger = require("../Loggers/MasterProcessLogger")
+const Logger = require("../Library/Loggers/MasterProcessLogger")
 
 class MessageRouter {
     constructor() {
