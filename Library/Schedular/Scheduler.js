@@ -42,6 +42,18 @@ class Scheduler {
             Logger.info("Scheduler stopped!");
         }
     }
+
+    /**
+     * Returns the next scheduled execution date/time
+     * @returns {Date|null} The next execution date or null if no task is scheduled
+     */
+    getNextExecutionTime() {
+        if (!this.task) {
+            return null;
+        }
+        return this.task.nextInvocation();
+    }
+
 }
 
 const getNextSchedule = () => {
