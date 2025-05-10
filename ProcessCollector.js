@@ -9,11 +9,12 @@ const RapidAPIAutomatorFactory = require("./Library/Factories/RapidAPIAutomatorF
 const RapidAPICollectionProcess = require("./Library/CollectionProcesses/RapidAPICollectionProcess");
 const RapidAPIConfigLoader = require("./Library/ConfigLoaders/RapidAPIConfigLoader");
 const RapidAPIResultsProcessor = require("./Library/ResultProcessors/RapidAPIResultProcessor");
+const {getDailyScheduleRule} = require("./Library/Schedulers/Scheduler");
 
 class CollectorApp {
     constructor() {
         this.processRegistry = new ProcessRegistry();
-        this.schedulerManager = new SchedulerManager(this.processRegistry);
+        this.schedulerManager = new SchedulerManager(this.processRegistry, getDailyScheduleRule);
     }
 
     async start() {
