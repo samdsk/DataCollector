@@ -1,6 +1,6 @@
 const ProcessFactory = require("./ProcessFactory");
 const MessageRouter = require("./MessageRouter");
-const Logger = require("../Loggers/MasterProcessLogger");
+const Logger = require("../Library/Loggers/MasterProcessLogger");
 const {ProcessTypes} = require("./ProcessConstants");
 
 class ProcessManager {

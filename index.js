@@ -1,6 +1,6 @@
 console.log('File loaded:', __filename);
 const Logger = require("./Library/Loggers/MasterProcessLogger")
-const ProcessManager = require("./Library/Processes/ProcessManager");
+const ProcessManager = require("./Processes/ProcessManager");
 
 class Application {
     constructor() {
