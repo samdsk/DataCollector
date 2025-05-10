@@ -57,7 +57,7 @@ const app = async () => {
     scheduler.start(schedulerExpression);
 
     handle_api_trigger(scheduler);
-    Logger.info("started successfully")
+    Logger.info(`started successfully with next running ${scheduler.getNextExecutionTime()}`)
 };
 
 async function start() {
@@ -77,7 +77,7 @@ const handle_api_trigger = (scheduler) => {
     process.on("message", (msg) => {
         if (msg.to === "COLLECTOR" && msg.code === API_TRIGGER) {
             Logger.info("API trigger received.")
-            // scheduler.emit(getNextSchedule())
+            scheduler.emit(getNextSchedule())
             return process.send({to: SEND_TO, from: CURRENT_PROCESS, code: 200})
         }
     })
