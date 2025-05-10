@@ -2,20 +2,21 @@ require("dotenv").config();
 
 const {db_connect, db_close} = require("./Database/db_handler");
 const RapidAPIAutomator = require("./Library/Automators/RapidAPIAutomator");
-const {logResultsToJSONFile} = require("./Library/resultsLogger");
+const {logResultsToJSONFile} = require("./Library/Loggers/ResultsLogger");
 const Logger = require("./Library/Loggers/CollectorLogger")
 
 const SEND_TO = require("./Library/Constants").SERVER;
 const CURRENT_PROCESS = require("./Library/Constants").COLLECTOR;
 
-const CollectorEventEmitter = require("./Library/CollectorEventEmitter");
-const {Scheduler, EVENT, API_TRIGGER, getNextSchedule} = require("./Library/Scheduler");
-const {getJSONFromFile, getJobTypesFromFile} = require("./Library/utils");
+const CollectorEventEmitter = require("./Library/Schedular/CollectorEventEmitter");
+const {Scheduler, EVENT, API_TRIGGER, getNextSchedule} = require("./Library/Schedular/Scheduler");
+const {getJSONFromFile, getJobTypesFromFile} = require("./Library/Utils/Utils");
 const RapidAPIRequestSender_v02 = require("./Library/RequestSenders/RapidAPIRequestSender_v02");
 const JobPostHandler = require("./Library/Handlers/JobPostHandler");
 const RapidAPIConverter = require("./Library/Converters/RapidAPIConverter");
 const JobPostService = require("./Services/JobPostService");
 const RapidAPICollector = require("./Library/Collectors/RapidAPICollector");
+const RetryWithDelay = require("./Library/CollectorErrorHandler/RetryWithDelay");
 
 async function rapiAPIJobPostStarter() {
     try {
@@ -32,7 +33,8 @@ async function rapiAPIJobPostStarter() {
         const keySet = new Set(keys);
         const sender = new RapidAPIRequestSender_v02();
         const collector = new RapidAPICollector(sender, new JobPostHandler(RapidAPIConverter, JobPostService));
-        const automator = new RapidAPIAutomator(keySet, sender, collector);
+        const retryWithDelay = new RetryWithDelay();
+        const automator = new RapidAPIAutomator(keySet, sender, collector, retryWithDelay);
 
         const response = await automator.collect(jobList);
 
@@ -56,7 +58,7 @@ const app = async () => {
     scheduler.start(schedulerExpression);
 
     handle_api_trigger(scheduler);
-    Logger.info("started successfully")
+    Logger.info(`started successfully with next running ${scheduler.getNextExecutionTime()}`)
 };
 
 async function start() {

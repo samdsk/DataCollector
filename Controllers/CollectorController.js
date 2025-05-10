@@ -1,4 +1,4 @@
-const {EVENT, API_TRIGGER} = require('../Library/Scheduler')
+const {EVENT, API_TRIGGER} = require('../Library/Schedular/Scheduler')
 const RequestError = require("../Errors/RequestError");
 const Logger = require("../Library/Loggers/ServerLogger");
 
