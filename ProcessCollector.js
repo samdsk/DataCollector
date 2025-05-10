@@ -4,7 +4,7 @@ const {db_connect, db_close} = require("./Database/db_handler");
 const Logger = require("./Library/Loggers/CollectorLogger")
 
 const ProcessRegistry = require("./Library/CollectorProcessRegistry");
-const SchedulerManager = require("./Library/Schedulars/SchedulerManager");
+const SchedulerManager = require("./Library/Schedulers/SchedulerManager");
 const RapidAPIAutomatorFactory = require("./Library/Factories/RapidAPIAutomatorFactory");
 const RapidAPICollectionProcess = require("./Library/CollectionProcesses/RapidAPICollectionProcess");
 const RapidAPIConfigLoader = require("./Library/ConfigLoaders/RapidAPIConfigLoader");
