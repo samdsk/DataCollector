@@ -51,7 +51,6 @@ class ProcessManager {
                 if (testCompleted) return;
 
                 // If we see a message from SERVER to COLLECTOR or COLLECTOR to SERVER
-                // then routing is working
                 if ((msg.from === ProcessTypes.SERVER.name && msg.to === ProcessTypes.COLLECTOR.name) ||
                     (msg.from === ProcessTypes.COLLECTOR.name && msg.to === ProcessTypes.SERVER.name)) {
 
@@ -77,7 +76,7 @@ class ProcessManager {
 
             // Send a test message to SERVER
             this.processes.get(ProcessTypes.SERVER.name).sendMessage({
-                from: 'MASTER',
+                from: 'MAIN',
                 to: ProcessTypes.SERVER.name,
                 code: 'SEND_TEST_TO_COLLECTOR'
             });

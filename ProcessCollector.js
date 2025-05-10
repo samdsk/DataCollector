@@ -56,7 +56,7 @@ const app = async () => {
     const scheduler = new Scheduler(Emitter);
     scheduler.start(schedulerExpression);
 
-    // handle_api_trigger(scheduler);
+    handle_api_trigger(scheduler);
     Logger.info("started successfully")
 };
 
@@ -73,34 +73,14 @@ async function start() {
     }
 }
 
-process.on('message', (message) => {
-    Logger.debug(`[COLLECTOR] Received message: ${JSON.stringify(message)}`);
-
-    // Log receipt of test routing message
-    if (message.code === 'TEST_ROUTING' && message.from === ProcessTypes.SERVER.name) {
-        Logger.debug('[COLLECTOR] Received test routing message from SERVER');
-
-        // Send confirmation back to the server
-        process.send({
-            from: ProcessTypes.COLLECTOR.name,
-            to: ProcessTypes.SERVER.name, code: 'TEST_ROUTING_RECEIVED',
-            data: {
-                originalTimestamp: message.data?.timestamp, responseTimestamp: Date.now()
-            }
-        });
-    }
-
-});
-
-
-// const handle_api_trigger = (scheduler) => {
-//     process.on("message", (msg) => {
-//         if (msg.to === "COLLECTOR" && msg.code === API_TRIGGER) {
-//             Logger.info("API trigger received.")
-//             scheduler.emit(getNextSchedule())
-//             return process.send({to: SEND_TO, from: CURRENT_PROCESS, code: 200})
-//         }
-//     })
-// }
+const handle_api_trigger = (scheduler) => {
+    process.on("message", (msg) => {
+        if (msg.to === "COLLECTOR" && msg.code === API_TRIGGER) {
+            Logger.info("API trigger received.")
+            // scheduler.emit(getNextSchedule())
+            return process.send({to: SEND_TO, from: CURRENT_PROCESS, code: 200})
+        }
+    })
+}
 
 start();
