@@ -9,8 +9,8 @@ class RapidAPICollectionProcess {
 
     async execute() {
         try {
-            const jobList = await this.configLoader.loadJobTypes();
-            const keys = await this.configLoader.loadKeys();
+            const jobList = await this.configLoader.loadJobTypes(process.env.JOBTYPES_FILENAME);
+            const keys = await this.configLoader.loadKeys(process.env.KEYS_FILENAME);
 
             if (!this.configLoader.validateConfiguration(jobList, keys)) {
                 throw new Error("Invalid configuration");

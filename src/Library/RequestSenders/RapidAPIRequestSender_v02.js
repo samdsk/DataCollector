@@ -111,6 +111,7 @@ class RapidAPIRequestSender_v02 {
             const response = await axios.request(requestOptions);
             return this.formatResponse(response.data, jobType, params.location, params.acceptLanguage);
         } catch (error) {
+            console.log(error)
             Logger.error(`${RapidAPIRequestSender_v02.DATA_PROVIDER}: Receiving : ${JSON.stringify(error)}`);
             if (error.response) {
                 throw this.formatError(error, jobType, requestedPage);

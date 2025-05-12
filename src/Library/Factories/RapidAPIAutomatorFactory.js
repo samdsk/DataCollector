@@ -9,7 +9,7 @@ const JobPostService = require("../../Services/JobPostService");
 class RapidAPIAutomatorFactory {
     static createAutomator(keys) {
         const sender = new RapidAPIRequestSender_v02();
-        const handler = new JobPostHandler(new RapidAPIConverter(), JobPostService);
+        const handler = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new RapidAPICollector(sender, handler);
         const retryHandler = new RetryWithDelay(
             parseInt(process.env.MAX_RETRIES, 10) || 5,
