@@ -1,15 +1,15 @@
 const CollectorLogger = require("../Loggers/CollectorLogger");
 
 class JobPostHandler {
-    constructor(Converter, JobPostService) {
-        this.Converter = Converter;
-        this.JobPostService = JobPostService;
+    constructor(converter, jobPostService) {
+        this.converter = converter;
+        this.jobPostService = jobPostService;
     }
 
     async insertJob(job, job_type, language) {
         try {
-            const jobPost = this.Converter.convert(job, job_type, language);
-            return await this.JobPostService.create(jobPost);
+            const jobPost = this.converter.convert(job, job_type, language);
+            return await this.jobPostService.create(jobPost);
         } catch (err) {
             CollectorLogger.error("JobPostHandler: Something went wrong during insert " + JSON.stringify(err.message));
             return null;

@@ -13,11 +13,11 @@ class RapidAPIConverter {
 
         return {
             job_type: job_type,
-            title: job.title,
-            company: job.company,
-            location: job.location,
-            text: job.description,
-            employment_type: job.employmentType,
+            title: job.title || '',
+            company: job.company || '',
+            location: job.location || '',
+            text: job.description || '',
+            employment_type: job.employmentType || '',
             links: links,
             author: RapidAPIRequestSender_v02.DATA_PROVIDER,
             data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
