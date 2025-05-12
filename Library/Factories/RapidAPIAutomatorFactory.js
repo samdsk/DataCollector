@@ -3,11 +3,13 @@ const JobPostHandler = require("../Handlers/JobPostHandler");
 const RetryWithDelay = require("../CollectorErrorHandler/RetryWithDelay");
 const RapidAPICollector = require("../Collectors/RapidAPICollector");
 const RapidAPIAutomator = require("../Automators/RapidAPIAutomator");
+const RapidAPIConverter = require("../Converters/RapidAPIConverter");
+const JobPostService = require("../../Services/JobPostService");
 
 class RapidAPIAutomatorFactory {
     static createAutomator(keys) {
         const sender = new RapidAPIRequestSender_v02();
-        const handler = new JobPostHandler(RapidAPIConverter, JobPostService);
+        const handler = new JobPostHandler(new RapidAPIConverter(), JobPostService);
         const collector = new RapidAPICollector(sender, handler);
         const retryHandler = new RetryWithDelay(
             parseInt(process.env.MAX_RETRIES, 10) || 5,
