@@ -19,6 +19,4 @@ const Role = new mongoose.Schema(
     {timestamps: true}
 );
 
-Role.index({role: 1}, {unique: true});
-
 module.exports = Role;
