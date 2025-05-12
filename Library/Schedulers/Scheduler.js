@@ -56,7 +56,7 @@ class Scheduler {
 
 }
 
-const getNextSchedule = () => {
+const getMonthlyScheduleRule = () => {
     // setting a day a month from now
     const now = new Date();
     const day = now.getDate();
@@ -72,4 +72,17 @@ const getNextSchedule = () => {
     return rule
 }
 
-module.exports = {Scheduler, EVENT, API_TRIGGER, getNextSchedule};
+const getDailyScheduleRule = () => {
+    const now = new Date();
+
+    const firstRunDate = new Date(now.getTime() + 2 * 60 * 1000);
+
+    const rule = new schedule.RecurrenceRule();
+    rule.hour = firstRunDate.getHours();
+    rule.minute = firstRunDate.getMinutes();
+    
+    return rule;
+}
+
+
+module.exports = {Scheduler, EVENT, API_TRIGGER, getDailyScheduleRule, getMonthlyScheduleRule};
