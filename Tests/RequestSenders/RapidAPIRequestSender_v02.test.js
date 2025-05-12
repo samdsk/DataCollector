@@ -26,7 +26,7 @@ const response_example = {
             ],
         },
     ],
-    location: "Italia",
+    location: "Italy",
     language: "it_IT",
     job_type: "Example",
     data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
