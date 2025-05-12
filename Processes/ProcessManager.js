@@ -1,7 +1,7 @@
-const ProcessFactory = require("./ProcessFactory");
-const MessageRouter = require("./MessageRouter");
 const Logger = require("../Library/Loggers/MasterProcessLogger");
 const {ProcessTypes} = require("./ProcessConstants");
+const MessageRouter = require("./MessageRouter");
+const ProcessFactory = require("./ProcessFactory");
 
 class ProcessManager {
     constructor() {
@@ -51,8 +51,7 @@ class ProcessManager {
                 if (testCompleted) return;
 
                 // If we see a message from SERVER to COLLECTOR or COLLECTOR to SERVER
-                if ((msg.from === ProcessTypes.SERVER.name && msg.to === ProcessTypes.COLLECTOR.name) ||
-                    (msg.from === ProcessTypes.COLLECTOR.name && msg.to === ProcessTypes.SERVER.name)) {
+                if ((msg.from === ProcessTypes.SERVER.name && msg.to === ProcessTypes.COLLECTOR.name) || (msg.from === ProcessTypes.COLLECTOR.name && msg.to === ProcessTypes.SERVER.name)) {
 
                     messageRelayed = true;
                     testCompleted = true;
@@ -76,9 +75,7 @@ class ProcessManager {
 
             // Send a test message to SERVER
             this.processes.get(ProcessTypes.SERVER.name).sendMessage({
-                from: 'MAIN',
-                to: ProcessTypes.SERVER.name,
-                code: 'SEND_TEST_TO_COLLECTOR'
+                from: 'MAIN', to: ProcessTypes.SERVER.name, code: 'SEND_TEST_TO_COLLECTOR'
             });
 
             // After test, restore original handler

@@ -1,12 +1,15 @@
+const path = require('path');
+
 const ProcessTypes = {
     SERVER: {
         name: 'SERVER',
-        path: './ProcessAPIServer',
+        path: path.resolve(__dirname, './ProcessAPIServer')
+        ,
         dbRequired: true
     },
     COLLECTOR: {
         name: 'COLLECTOR',
-        path: './ProcessCollector',
+        path: path.resolve(__dirname, './ProcessCollector'),
         dbRequired: true
     },
 };

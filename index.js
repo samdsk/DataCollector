@@ -1,4 +1,3 @@
-console.log('File loaded:', __filename);
 const Logger = require("./Library/Loggers/MasterProcessLogger")
 const ProcessManager = require("./Processes/ProcessManager");
 

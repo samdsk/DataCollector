@@ -2,9 +2,9 @@ const {API_TRIGGER} = require('../Library/Schedulers/Scheduler')
 const RequestError = require("../Errors/RequestError");
 const Logger = require("../Library/Loggers/ServerLogger");
 
-const {ProcessType} = require("../Processes/ProcessConstants");
-const CURRENT_PROCESS = ProcessType.SERVER.name;
-const SEND_TO = ProcessType.COLLECTOR.name;
+const {ProcessTypes} = require("../Processes/ProcessConstants");
+const CURRENT_PROCESS = ProcessTypes.SERVER.name;
+const SEND_TO = ProcessTypes.COLLECTOR.name;
 
 const triggerCollector = async (req, res, next) => {
     const collect = req.body.collect || false;

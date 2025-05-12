@@ -1,15 +1,15 @@
 require("dotenv").config();
 
-const {db_connect, db_close} = require("./Database/db_handler");
-const Logger = require("./Library/Loggers/CollectorLogger")
+const {db_connect, db_close} = require("../Database/db_handler");
+const Logger = require("../Library/Loggers/CollectorLogger")
 
-const ProcessRegistry = require("./Library/CollectorProcessRegistry");
-const SchedulerManager = require("./Library/Schedulers/SchedulerManager");
-const RapidAPIAutomatorFactory = require("./Library/Factories/RapidAPIAutomatorFactory");
-const RapidAPICollectionProcess = require("./Library/CollectionProcesses/RapidAPICollectionProcess");
-const RapidAPIConfigLoader = require("./Library/ConfigLoaders/RapidAPIConfigLoader");
-const RapidAPIResultsProcessor = require("./Library/ResultProcessors/RapidAPIResultProcessor");
-const {getDailyScheduleRule} = require("./Library/Schedulers/Scheduler");
+const ProcessRegistry = require("../Library/CollectorProcessRegistry");
+const SchedulerManager = require("../Library/Schedulers/SchedulerManager");
+const RapidAPIAutomatorFactory = require("../Library/Factories/RapidAPIAutomatorFactory");
+const RapidAPICollectionProcess = require("../Library/CollectionProcesses/RapidAPICollectionProcess");
+const RapidAPIConfigLoader = require("../Library/ConfigLoaders/RapidAPIConfigLoader");
+const RapidAPIResultsProcessor = require("../Library/ResultProcessors/RapidAPIResultProcessor");
+const {getDailyScheduleRule} = require("../Library/Schedulers/Scheduler");
 
 class CollectorApp {
     constructor() {
@@ -65,7 +65,6 @@ class CollectorApp {
 }
 
 async function start() {
-    Logger.info("Starting collector application...");
     try {
         const app = new CollectorApp();
         await app.start();
