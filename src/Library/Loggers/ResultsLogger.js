@@ -1,5 +1,8 @@
 const fs = require("fs");
-const RES_DIR = "./results/";
+const path = require("path");
+const PROJECT_ROOT = path.resolve(__dirname, "../../../").replace(/\\/g, "/") + "/";
+const RES_DIR = path.join(PROJECT_ROOT, "Results/");
+
 
 const getPathCompatibleStringFromDate = (date) => {
     return date.toISOString().replaceAll(":", "-");
