@@ -1,10 +1,11 @@
 const Logger = require("../Loggers/CollectorLogger");
 
 class RapidAPICollectionProcess {
-    constructor(automatorFactory, resultProcessor, configLoader) {
+    constructor(automatorFactory, resultProcessor, configLoader, schedulerManager) {
         this.automatorFactory = automatorFactory;
         this.resultProcessor = resultProcessor;
         this.configLoader = configLoader;
+        this.schedulerManager = schedulerManager;
     }
 
     async execute() {
@@ -24,6 +25,14 @@ class RapidAPICollectionProcess {
         } catch (error) {
             Logger.info("Something went wrong in the RapidAPI collection process");
             Logger.error(error);
+
+            if (this.schedulerManager && this.schedulerManager.scheduler) {
+                const nextRun = this.schedulerManager.scheduler.getNextExecutionTime();
+                Logger.info(`Skipping today's execution due to error. Next scheduled run is at: ${nextRun}`);
+            } else {
+                Logger.info("Skipping today's execution due to error. Waiting for next scheduled run.");
+            }
+
             throw error;
         }
     }
