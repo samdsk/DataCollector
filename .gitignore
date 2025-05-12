@@ -195,3 +195,5 @@ $RECYCLE.BIN/
 /Results/full_results
 /config/RapidAPI/keylist.json
 /Database
+/build
+deploy.zip
