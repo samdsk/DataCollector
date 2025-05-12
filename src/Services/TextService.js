@@ -1,5 +1,5 @@
 const {Text} = require("../Models/Text");
-const AnnotationService = require("../Services/AnnotationService");
+const AnnotationService = require("./AnnotationService");
 const TransactionWrapper = require("../Database/TransactionWrapper");
 
 const opts = {runValidators: true};
