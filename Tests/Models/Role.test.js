@@ -1,6 +1,6 @@
 const {connect, close, clearDatabase} = require("../db_handler");
 
-const {Role} = require("../../Models/Role");
+const {Role} = require("../../src/Models/Role");
 const {default: mongoose} = require("mongoose");
 
 const delete_list = ["roles"];

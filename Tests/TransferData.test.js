@@ -1,4 +1,4 @@
-const TransferData = require("../Database/TransferData");
+const TransferData = require("../src/Database/TransferData");
 
 describe("Transfer Data", () => {
     it.skip("Convert Old JobPosts to Text JobPosts", async () => {

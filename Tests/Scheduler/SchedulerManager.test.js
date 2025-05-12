@@ -1,11 +1,11 @@
-const SchedulerManager = require('../../Library/Schedulers/SchedulerManager');
-const {Scheduler} = require('../../Library/Schedulers/Scheduler');
-const CollectorEventEmitter = require('../../Library/Schedulers/CollectorEventEmitter');
-const Logger = require("../../Library/Loggers/CollectorLogger");
+const SchedulerManager = require('../../src/Library/Schedulers/SchedulerManager');
+const {Scheduler} = require('../../src/Library/Schedulers/Scheduler');
+const CollectorEventEmitter = require('../../src/Library/Schedulers/CollectorEventEmitter');
+const Logger = require("../../src/Library/Loggers/CollectorLogger");
 
-jest.mock('../../Library/Schedulers/Scheduler');
-jest.mock('../../Library/Schedulers/CollectorEventEmitter');
-jest.mock('../../Library/Loggers/CollectorLogger');
+jest.mock('../../src/Library/Schedulers/Scheduler');
+jest.mock('../../src/Library/Schedulers/CollectorEventEmitter');
+jest.mock('../../src/Library/Loggers/CollectorLogger');
 
 describe('SchedulerManager', () => {
     let mockProcessRegistry, mockNextRunStrategy, schedulerManager;

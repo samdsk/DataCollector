@@ -1,14 +1,14 @@
 const {connect, close, clearDatabase} = require("../db_handler");
 const mongoose = require("mongoose");
 
-const {Annotator} = require("../../Models/Annotator");
-const {Role} = require("../../Models/Role");
-const {Background} = require("../../Models/Background");
-const {Domain} = require("../../Models/Domain");
-const {Text} = require("../../Models/Text");
-const {Label} = require("../../Models/Label");
-const {Annotation} = require("../../Models/Annotation");
-const {DataProvider} = require("../../Models/DataProvider");
+const {Annotator} = require("../../src/Models/Annotator");
+const {Role} = require("../../src/Models/Role");
+const {Background} = require("../../src/Models/Background");
+const {Domain} = require("../../src/Models/Domain");
+const {Text} = require("../../src/Models/Text");
+const {Label} = require("../../src/Models/Label");
+const {Annotation} = require("../../src/Models/Annotation");
+const {DataProvider} = require("../../src/Models/DataProvider");
 
 const delete_list = ["annotations"];
 

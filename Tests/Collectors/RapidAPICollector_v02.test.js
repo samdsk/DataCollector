@@ -1,9 +1,9 @@
-const Collector = require("../../Library/Collectors/RapidAPICollector");
-const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
-const JobPostHandler = require("../../Library/Handlers/JobPostHandler");
-const JobPostService = require("../../Services/JobPostService");
-const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
-const ResultLogger = require("../../Library/Loggers/ResultsLogger");
+const Collector = require("../../src/Library/Collectors/RapidAPICollector");
+const RapidAPIRequestSender_v02 = require("../../src/Library/RequestSenders/RapidAPIRequestSender_v02");
+const JobPostHandler = require("../../src/Library/Handlers/JobPostHandler");
+const JobPostService = require("../../src/Services/JobPostService");
+const RapidAPIConverter = require("../../src/Library/Converters/RapidAPIConverter");
+const ResultLogger = require("../../src/Library/Loggers/ResultsLogger");
 
 require("dotenv").config();
 

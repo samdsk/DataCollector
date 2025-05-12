@@ -1,10 +1,10 @@
-const Collector = require("../../Library/Collectors/RapidAPICollector.js");
+const Collector = require("../../src/Library/Collectors/RapidAPICollector.js");
 const {connect, close, clearDatabase} = require("../db_handler");
-const RapidAPIRequestSender_v02 = require("../../Library/RequestSenders/RapidAPIRequestSender_v02");
-const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
-const JobPostService = require("../../Services/JobPostService.js");
-const JobPostHandler = require("../../Library/Handlers/JobPostHandler");
-const DataProviderService = require("../../Services/DataProviderService.js");
+const RapidAPIRequestSender_v02 = require("../../src/Library/RequestSenders/RapidAPIRequestSender_v02");
+const RapidAPIConverter = require("../../src/Library/Converters/RapidAPIConverter");
+const JobPostService = require("../../src/Services/JobPostService.js");
+const JobPostHandler = require("../../src/Library/Handlers/JobPostHandler");
+const DataProviderService = require("../../src/Services/DataProviderService.js");
 const axios = require("axios");
 
 require("dotenv").config();
