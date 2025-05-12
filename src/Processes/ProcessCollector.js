@@ -42,7 +42,8 @@ class CollectorApp {
         const rapidAPIProcess = new RapidAPICollectionProcess(
             RapidAPIAutomatorFactory,
             RapidAPIResultsProcessor,
-            RapidAPIConfigLoader
+            RapidAPIConfigLoader,
+            this.schedulerManager
         );
         this.processRegistry.register(rapidAPIProcess);
     }
