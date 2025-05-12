@@ -1,6 +1,6 @@
 const {connect, close, clearDatabase} = require("../db_handler");
 
-const {DataProvider} = require("../../Models/DataProvider");
+const {DataProvider} = require("../../src/Models/DataProvider");
 
 const delete_list = ["dataproviders"];
 
