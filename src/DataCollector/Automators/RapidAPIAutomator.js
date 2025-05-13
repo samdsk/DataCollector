@@ -1,5 +1,5 @@
 const Logger = require("../Loggers/CollectorLogger");
-const MaxRetriesReachedError = require("../CollectorErrorHandler/MaxRetriesReachedError");
+const MaxRetriesReachedError = require("../Errors/MaxRetriesReachedError");
 require("dotenv").config();
 
 
@@ -8,7 +8,7 @@ class RapidAPIAutomator {
 
     constructor(keys, sender, collector, retryHandler, config) {
         if (!(keys instanceof Set)) {
-            throw new Error("keys must be a set");
+            throw new Error("RapidAPIAutomator: keys must be a set");
         }
         this.keys = keys;
         this.config = config;
@@ -54,17 +54,17 @@ class RapidAPIAutomator {
             );
         }
 
-        Logger.debug("Collected all job types, exiting...");
+        Logger.debug("RapidAPIAutomator: Collected all job types, exiting...");
         return results;
     }
 
     handleCollectError(error, jobTypesList, options, key) {
         if (RapidAPIAutomator.KEY_DELETE_ERROR_CODES.includes(error.status)) {
-            Logger.debug(`The key ***${key.slice(-4)} isn't valid anymore! Removing it.`);
+            Logger.debug(`RapidAPIAutomator: The key ***${key.slice(-4)} isn't valid anymore! Removing it.`);
             this.keys.delete(key);
         }
 
-        Logger.info(`Last job type ${error.jobType}, last page ${error.requestedPage}`);
+        Logger.info(`RapidAPIAutomator: Last job type ${error.jobType}, last page ${error.requestedPage}`);
 
         this.updatePaginationState(error, jobTypesList, options);
     }
@@ -78,7 +78,7 @@ class RapidAPIAutomator {
 
         const indexOfJob = jobTypesList.indexOf(error.jobType);
         if (indexOfJob > 0) {
-            Logger.debug(`Slicing the job types list from index ${indexOfJob}`);
+            Logger.debug(`RapidAPIAutomator: Slicing the job types list from index ${indexOfJob}`);
             jobTypesList.splice(0, indexOfJob);
         }
     }

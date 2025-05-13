@@ -1,16 +1,24 @@
-import {db_close, db_connect} from "./db_handler";
+require("dotenv").config();
+const mongoose = require("mongoose");
+const pipeline = require("./finetune_pipeline");
 
-const Logger = require("../Library/Loggers/DatabaseLogger");
+const Logger = require("../DataCollector/Loggers/DatabaseLogger");
 
-class DatabaseManager {
-    async connect() {
-        Logger.info("Starting...");
-        await db_connect(process.env.DB_PROD_URL);
-    }
+const db_connect = async (DB_URL) => {
+    const default_url = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_URI}/${process.env.DB_NAME}`
+    const url = DB_URL || default_url;
+    await mongoose.connect(url);
 
-    async disconnect() {
-        await db_close();
-    }
-}
+    await mongoose.connection.db.createCollection("outputllms", {
+        viewOn: "annotations",
+        pipeline: pipeline,
+    });
 
-module.exports = DatabaseManager;
+    Logger.info(`DB connected.`);
+};
+const db_close = async () => {
+    await mongoose.connection.close();
+    Logger.info(`DB connection closed.`);
+};
+
+module.exports = {db_connect, db_close};

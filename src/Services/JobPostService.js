@@ -1,6 +1,6 @@
 const {JobPost} = require("../Models/JobPost");
 const TextService = require("./TextService");
-const IdGenerator = require("../Library/Utils/IDGenerator");
+const IdGenerator = require("../DataCollector/Utils/IDGenerator");
 const DataProviderService = require("./DataProviderService");
 
 const opts = {runValidators: true};

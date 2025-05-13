@@ -1,5 +1,5 @@
 const Logger = require("../Loggers/CollectorLogger");
-const MaxRetriesReachedError = require("./MaxRetriesReachedError");
+const MaxRetriesReachedError = require("../Errors/MaxRetriesReachedError");
 
 class RetryWithDelay {
     static DELAYS = [500, 1000, 2000, 5000, 10000];
@@ -89,7 +89,7 @@ class RetryWithDelay {
 
             if (this.consecutiveErrors >= this.maxRetries) {
                 Logger.error(`RetryWithDelay: Maximum consecutive ${this.consecutiveErrors} retries reached. Error: ${error.message}`);
-                throw new MaxRetriesReachedError(this.consecutiveErrors, error.message);
+                throw new MaxRetriesReachedError(this.consecutiveErrors, error);
             }
 
             const delay = RetryWithDelay.getDelay(this.consecutiveErrors - 1);

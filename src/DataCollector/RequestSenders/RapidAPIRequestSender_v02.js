@@ -1,6 +1,7 @@
 const axios = require("axios");
 require("dotenv").config();
 const Logger = require("../Loggers/CollectorLogger");
+const RapidAPICollectionError = require("../Errors/RapidAPICollectionError");
 
 class RapidAPIRequestSender_v02 {
     static DATA_PROVIDER = "RapidAPI_v02";
@@ -85,12 +86,12 @@ class RapidAPIRequestSender_v02 {
      * @returns {Error} The enriched error.
      */
     formatError(error, jobType, requestedPage) {
-        const formattedError = new Error(error.message);
-        formattedError.status = error?.response?.status;
-        formattedError.jobType = jobType;
-        formattedError.requestedPage = requestedPage;
-        formattedError.originalError = error;
-        return formattedError;
+        return new RapidAPICollectionError(error.message, {
+            status: error?.response?.status,
+            jobType: jobType,
+            requestedPage: requestedPage,
+            originalError: error
+        });
     }
 
     /**

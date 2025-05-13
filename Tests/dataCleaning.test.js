@@ -1,4 +1,4 @@
-const DataCleaner = require("../src/Library/Utils/DataCleaning");
+const DataCleaner = require("../src/DataCollector/Utils/DataCleaning");
 
 describe("Text filter", () => {
     const replace = " ";

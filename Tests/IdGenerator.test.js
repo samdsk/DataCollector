@@ -1,4 +1,4 @@
-const IdGenerator = require("../src/Library/Utils/IDGenerator");
+const IdGenerator = require("../src/DataCollector/Utils/IDGenerator");
 const crypto = require("crypto");
 const fs = require("fs/promises");
 

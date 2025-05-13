@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
-const RapidAPICollector = require("../../src/Library/Collectors/RapidAPICollector");
-const RetryWithDelay = require("../../src/Library/CollectorErrorHandler/RetryWithDelay");
+const RapidAPICollector = require("../../src/DataCollector/Collectors/RapidAPICollector");
+const RetryWithDelay = require("../../src/DataCollector/CollectorErrorHandler/RetryWithDelay");
 const axios = require("axios");
 const DataProviderService = require("../../src/Services/DataProviderService");
-const RapidAPIRequestSender_v02 = require("../../src/Library/RequestSenders/RapidAPIRequestSender_v02");
-const JobPostHandler = require("../../src/Library/Handlers/JobPostHandler");
-const RapidAPIConverter = require("../../src/Library/Converters/RapidAPIConverter");
+const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
+const JobPostHandler = require("../../src/DataCollector/Handlers/JobPostHandler");
+const RapidAPIConverter = require("../../src/DataCollector/Converters/RapidAPIConverter");
 const JobPostService = require("../../src/Services/JobPostService");
-const RapidAPIAutomator = require("../../src/Library/Automators/RapidAPIAutomator");
+const RapidAPIAutomator = require("../../src/DataCollector/Automators/RapidAPIAutomator");
 
 jest.mock("axios");
 

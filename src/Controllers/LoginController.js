@@ -3,7 +3,7 @@ const RequestError = require("../Errors/RequestError");
 const {authenticateUser} = require("../Services/UserService");
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
-const Logger = require("../Library/Loggers/ServerLogger");
+const Logger = require("../DataCollector/Loggers/ServerLogger");
 
 const SECRET_KEY = process.env.SERVER_SECRET_KEY;
 const SESSION_DURATION = process.env.SERVER_SESSION_DURATION || "3h";

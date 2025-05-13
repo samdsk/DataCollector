@@ -1,4 +1,4 @@
-const Logger = require("../Library/Loggers/MasterProcessLogger");
+const Logger = require("../DataCollector/Loggers/MasterProcessLogger");
 const {ProcessTypes} = require("./ProcessConstants");
 const MessageRouter = require("./MessageRouter");
 const ProcessFactory = require("./ProcessFactory");

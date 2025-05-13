@@ -1,10 +1,10 @@
-const Automate = require("../../src/Library/Automators/RapidAPIAutomator");
-const Collector = require("../../src/Library/Collectors/RapidAPICollector");
-const RapidAPIRequestSender_v02 = require("../../src/Library/RequestSenders/RapidAPIRequestSender_v02");
-const RetryWithDelay = require("../../src/Library/CollectorErrorHandler/RetryWithDelay");
+const Automate = require("../../src/DataCollector/Automators/RapidAPIAutomator");
+const Collector = require("../../src/DataCollector/Collectors/RapidAPICollector");
+const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
+const RetryWithDelay = require("../../src/DataCollector/CollectorErrorHandler/RetryWithDelay");
 
-jest.mock("../../src/Library/Collectors/RapidAPICollector");
-jest.mock("../../src/Library/RequestSenders/RapidAPIRequestSender_v02");
+jest.mock("../../src/DataCollector/Collectors/RapidAPICollector");
+jest.mock("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
 
 describe("Integration tests for Automate.collect()", () => {
     let automate;

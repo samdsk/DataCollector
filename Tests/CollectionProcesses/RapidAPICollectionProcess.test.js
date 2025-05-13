@@ -1,5 +1,5 @@
-const RapidAPICollectionProcess = require('../../src/Library/CollectionProcesses/RapidAPICollectionProcess');
-const Logger = require("../../src/Library/Loggers/CollectorLogger");
+const RapidAPICollectionProcess = require('../../src/DataCollector/CollectionProcesses/RapidAPICollectionProcess');
+const Logger = require("../../src/DataCollector/Loggers/CollectorLogger");
 
 describe('RapidAPICollectionProcess', () => {
     let automatorFactoryMock, resultProcessorMock, configLoaderMock, rapidAPICollectionProcess;
@@ -69,12 +69,12 @@ describe('RapidAPICollectionProcess', () => {
         configLoaderMock.loadKeys.mockResolvedValue(keysMock);
         configLoaderMock.validateConfiguration.mockReturnValue(false);
 
-        await expect(rapidAPICollectionProcess.execute()).rejects.toThrow('Invalid configuration');
+        await expect(rapidAPICollectionProcess.execute()).rejects.toThrow('RapidAPIProcess : Invalid configuration');
 
         expect(configLoaderMock.loadJobTypes).toHaveBeenCalled();
         expect(configLoaderMock.loadKeys).toHaveBeenCalled();
         expect(configLoaderMock.validateConfiguration).toHaveBeenCalledWith(jobListMock, keysMock);
-        expect(Logger.info).toHaveBeenCalledWith('Something went wrong in the RapidAPI collection process');
+        expect(Logger.info).toHaveBeenCalledWith('RapidAPIProcess : Skipping today\'s execution due to error. Waiting for next scheduled run.');
     });
 
     it('should handle errors thrown during execution and log them', async () => {
@@ -85,7 +85,7 @@ describe('RapidAPICollectionProcess', () => {
         await expect(rapidAPICollectionProcess.execute()).rejects.toThrow(errorMock);
 
         expect(configLoaderMock.loadJobTypes).toHaveBeenCalled();
-        expect(Logger.info).toHaveBeenCalledWith('Something went wrong in the RapidAPI collection process');
+        expect(Logger.info).toHaveBeenCalledWith('RapidAPIProcess : Skipping today\'s execution due to error. Waiting for next scheduled run.');
         expect(Logger.error).toHaveBeenCalledWith(errorMock);
     });
 });

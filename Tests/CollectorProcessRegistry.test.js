@@ -1,8 +1,8 @@
 // CollectorProcessRegistry.test.js
-const CollectorProcessRegistry = require('../src/Library/CollectorProcessRegistry');
-const Logger = require("../src/Library/Loggers/CollectorLogger");
+const CollectorProcessRegistry = require('../src/DataCollector/CollectorProcessRegistry');
+const Logger = require("../src/DataCollector/Loggers/CollectorLogger");
 
-jest.mock("../src/Library/Loggers/CollectorLogger", () => ({
+jest.mock("../src/DataCollector/Loggers/CollectorLogger", () => ({
     info: jest.fn(),
     error: jest.fn(),
 }));

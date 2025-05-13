@@ -1,4 +1,4 @@
-const LanguageUtils = require("../src/Library/Utils/LanguageUtils");
+const LanguageUtils = require("../src/DataCollector/Utils/LanguageUtils");
 
 describe("Language Tag Checker", () => {
     const valid_lang_codes = ["it", "en", "de", "si"];

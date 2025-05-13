@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const Logger = require("../Library/Loggers/MasterProcessLogger");
+const Logger = require("../DataCollector/Loggers/MasterProcessLogger");
 
 function displayStartupBanner() {
     // Try to get package.json for project info
