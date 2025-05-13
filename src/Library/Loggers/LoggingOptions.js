@@ -1,9 +1,14 @@
+require('dotenv').config();
+
 const winston = require("winston");
 const {combine, timestamp, printf, errors, colorize, splat} = winston.format;
 const {formatInTimeZone} = require("date-fns-tz");
 const path = require("path");
 const DailyRotateFile = require("winston-daily-rotate-file");
-require('dotenv').config();
+const fs = require("fs");
+const {LOGS_DIR} = require("../PathContants");
+
+fs.mkdirSync(LOGS_DIR, {recursive: true});
 
 const timeZone = "Europe/Rome";
 

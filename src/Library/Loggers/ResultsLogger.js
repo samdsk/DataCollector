@@ -1,8 +1,10 @@
 const fs = require("fs");
 const path = require("path");
-const PROJECT_ROOT = path.resolve(__dirname, "../../../").replace(/\\/g, "/") + "/";
-const RES_DIR = path.join(PROJECT_ROOT, "Results/");
 
+const PROJECT_ROOT = process.cwd();
+const RES_DIR = path.join(PROJECT_ROOT, "results");
+
+fs.mkdirSync(RES_DIR, {recursive: true});
 
 const getPathCompatibleStringFromDate = (date) => {
     return date.toISOString().replaceAll(":", "-");
@@ -19,7 +21,7 @@ const logResultsToJSONFile = async (filename, date, data) => {
     const timeStamp = getPathCompatibleStringFromDate(date);
 
     await fs.promises.writeFile(
-        `${RES_DIR}${filename}_${timeStamp}.json`,
+        path.join(RES_DIR, `${filename}_${timeStamp}.json`),
         JSON.stringify(data),
         {
             flag: "w",
