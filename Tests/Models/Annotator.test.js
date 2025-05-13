@@ -1,9 +1,9 @@
 const {connect, close, clearDatabase} = require("../db_handler");
 const mongoose = require("mongoose");
 
-const {Annotator} = require("../../Models/Annotator");
-const {Role} = require("../../Models/Role");
-const {Background} = require("../../Models/Background");
+const {Annotator} = require("../../src/Models/Annotator");
+const {Role} = require("../../src/Models/Role");
+const {Background} = require("../../src/Models/Background");
 
 const delete_list = ["annotators"];
 

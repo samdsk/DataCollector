@@ -1,5 +1,5 @@
-const DataProviderService = require("../../Services/DataProviderService");
-const {DataProvider} = require("../../Models/DataProvider");
+const DataProviderService = require("../../src/Services/DataProviderService");
+const {DataProvider} = require("../../src/Models/DataProvider");
 
 describe("DataProvider Service", () => {
     beforeEach(() => jest.restoreAllMocks());
