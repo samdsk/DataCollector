@@ -2,6 +2,7 @@ const Logger = require("../Library/Loggers/MasterProcessLogger");
 const {ProcessTypes} = require("./ProcessConstants");
 const MessageRouter = require("./MessageRouter");
 const ProcessFactory = require("./ProcessFactory");
+const displayStartupBanner = require("./ProjectBanner");
 
 class ProcessManager {
     constructor() {
@@ -10,6 +11,8 @@ class ProcessManager {
     }
 
     async initialize() {
+        displayStartupBanner()
+
         Logger.info(`Started MasterProcess with pid ${process.ppid}`);
 
         // Initialize system
