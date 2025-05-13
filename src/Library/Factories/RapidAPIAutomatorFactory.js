@@ -15,7 +15,7 @@ class RapidAPIAutomatorFactory {
             parseInt(process.env.MAX_RETRIES, 10) || 5,
             [],
             null,
-            parseInt(process.env.ERROR_WINDOW, 10) || 60000
+            parseInt(process.env.ERROR_WINDOW, 10) || 3000
         );
 
         return new RapidAPIAutomator(
