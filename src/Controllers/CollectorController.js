@@ -1,6 +1,6 @@
-const {API_TRIGGER} = require('../Library/Schedulers/Scheduler')
+const {API_TRIGGER} = require('../DataCollector/Schedulers/Scheduler')
 const RequestError = require("../Errors/RequestError");
-const Logger = require("../Library/Loggers/ServerLogger");
+const Logger = require("../DataCollector/Loggers/ServerLogger");
 
 const {ProcessTypes} = require("../Processes/ProcessConstants");
 const CURRENT_PROCESS = ProcessTypes.SERVER.name;

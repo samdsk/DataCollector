@@ -1,4 +1,4 @@
-const Logger = require("./src/Library/Loggers/MasterProcessLogger")
+const Logger = require("./src/DataCollector/Loggers/MasterProcessLogger")
 const ProcessManager = require("./src/Processes/ProcessManager");
 
 class Application {

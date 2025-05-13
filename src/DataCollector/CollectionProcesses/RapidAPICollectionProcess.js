@@ -14,7 +14,7 @@ class RapidAPICollectionProcess {
             const keys = await this.configLoader.loadKeys(process.env.KEYS_FILENAME);
 
             if (!this.configLoader.validateConfiguration(jobList, keys)) {
-                throw new Error("Invalid configuration");
+                throw new Error("RapidAPIProcess : Invalid configuration");
             }
 
             const automator = this.automatorFactory.createAutomator(keys);
@@ -23,14 +23,14 @@ class RapidAPICollectionProcess {
 
             return await this.resultProcessor.process(results);
         } catch (error) {
-            Logger.info("Something went wrong in the RapidAPI collection process");
+            Logger.info("RapidAPIProcess : Something went wrong in collection process");
             Logger.error(error);
 
             if (this.schedulerManager && this.schedulerManager.scheduler) {
                 const nextRun = this.schedulerManager.scheduler.getNextExecutionTime();
-                Logger.info(`Skipping today's execution due to error. Next scheduled run is at: ${nextRun}`);
+                Logger.info(`RapidAPIProcess : Skipping today's execution due to error. Next scheduled run is at: ${nextRun}`);
             } else {
-                Logger.info("Skipping today's execution due to error. Waiting for next scheduled run.");
+                Logger.info("RapidAPIProcess : Skipping today's execution due to error. Waiting for next scheduled run.");
             }
 
             throw error;

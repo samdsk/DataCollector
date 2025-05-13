@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const {isURL} = require("validator");
 const DataProvider = require("../Models/DataProvider");
-const LanguageUtils = require("../Library/Utils/LanguageUtils");
+const LanguageUtils = require("../DataCollector/Utils/LanguageUtils");
 
 function langTagValidator(value) {
     if (!LanguageUtils.validate(value))

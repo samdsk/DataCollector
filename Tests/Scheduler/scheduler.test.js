@@ -1,6 +1,6 @@
-const RapidAPIAutomator = require("../../src/Library/Automators/RapidAPIAutomator");
+const RapidAPIAutomator = require("../../src/DataCollector/Automators/RapidAPIAutomator");
 const EventEmitter = require("events");
-const {Scheduler, EVENT} = require("../../src/Library/Schedulers/Scheduler");
+const {Scheduler, EVENT} = require("../../src/DataCollector/Schedulers/Scheduler");
 
 describe("Scheduler:", () => {
     let scheduler;

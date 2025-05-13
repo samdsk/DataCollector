@@ -1,8 +1,8 @@
 require("dotenv").config();
 
-const Logger = require("../Library/Loggers/ServerLogger")
+const Logger = require("../DataCollector/Loggers/ServerLogger")
 const morgan = require("morgan");
-const {db_connect, db_close} = require("../Database/db_handler");
+const {db_connect, db_close} = require("../Database/DatabaseManager");
 const net = require('net');
 
 const morganMiddleware = morgan(

@@ -1,14 +1,14 @@
-const RapidAPIConfigLoader = require('../../src/Library/ConfigLoaders/RapidAPIConfigLoader');
+const RapidAPIConfigLoader = require('../../src/DataCollector/ConfigLoaders/RapidAPIConfigLoader');
 
-const {getJobTypesFromFile, getJSONFromFile} = require("../../src/Library/Utils/Utils");
-const Logger = require("../../src/Library/Loggers/CollectorLogger");
+const {getJobTypesFromFile, getJSONFromFile} = require("../../src/DataCollector/Utils/Utils");
+const Logger = require("../../src/DataCollector/Loggers/CollectorLogger");
 
-jest.mock('../../src/Library/Utils/Utils', () => ({
+jest.mock('../../src/DataCollector/Utils/Utils', () => ({
     getJobTypesFromFile: jest.fn(),
     getJSONFromFile: jest.fn(),
 }));
 
-jest.mock('../../src/Library/Loggers/CollectorLogger', () => ({
+jest.mock('../../src/DataCollector/Loggers/CollectorLogger', () => ({
     info: jest.fn(),
 }));
 

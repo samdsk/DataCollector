@@ -1,7 +1,7 @@
 const MessageRouter = require('../../src/Processes/MessageRouter');
-const Logger = require('../../src/Library/Loggers/MasterProcessLogger');
+const Logger = require('../../src/DataCollector/Loggers/MasterProcessLogger');
 
-jest.mock('../../src/Library/Loggers/MasterProcessLogger', () => ({
+jest.mock('../../src/DataCollector/Loggers/MasterProcessLogger', () => ({
     info: jest.fn(),
     error: jest.fn()
 }));

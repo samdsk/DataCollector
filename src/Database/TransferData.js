@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
-const Logger = require("../Library/Loggers/CollectorLogger");
+const Logger = require("../DataCollector/Loggers/CollectorLogger");
 const OldJobPost = require("../Models/OldJobPost");
 
 const JobPostSchema = require("../Schemas/JobPost");
 const DataProviderService = require("../Services/DataProviderService");
 const JobPostService = require("../Services/JobPostService");
-const JobPostConverter = require("../Library/Converters/JobPostConverter");
+const JobPostConverter = require("../DataCollector/Converters/JobPostConverter");
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

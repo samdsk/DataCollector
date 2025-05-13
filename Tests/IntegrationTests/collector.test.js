@@ -1,9 +1,9 @@
-const Collector = require("../../src/Library/Collectors/RapidAPICollector.js");
+const Collector = require("../../src/DataCollector/Collectors/RapidAPICollector.js");
 const {connect, close, clearDatabase} = require("../db_handler");
-const RapidAPIRequestSender_v02 = require("../../src/Library/RequestSenders/RapidAPIRequestSender_v02");
-const RapidAPIConverter = require("../../src/Library/Converters/RapidAPIConverter");
+const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
+const RapidAPIConverter = require("../../src/DataCollector/Converters/RapidAPIConverter");
 const JobPostService = require("../../src/Services/JobPostService.js");
-const JobPostHandler = require("../../src/Library/Handlers/JobPostHandler");
+const JobPostHandler = require("../../src/DataCollector/Handlers/JobPostHandler");
 const DataProviderService = require("../../src/Services/DataProviderService.js");
 const axios = require("axios");
 

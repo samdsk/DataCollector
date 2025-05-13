@@ -1,6 +1,6 @@
-const JobPostHandler = require("../../src/Library/Handlers/JobPostHandler");
+const JobPostHandler = require("../../src/DataCollector/Handlers/JobPostHandler");
 const JobPostService = require("../../src/Services/JobPostService");
-const RapidAPIConverter = require("../../src/Library/Converters/RapidAPIConverter");
+const RapidAPIConverter = require("../../src/DataCollector/Converters/RapidAPIConverter");
 
 describe("JobPostHandler: ", () => {
     beforeEach(() => jest.restoreAllMocks());

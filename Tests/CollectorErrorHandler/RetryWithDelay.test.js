@@ -1,5 +1,5 @@
-const RetryWithDelay = require('../../src/Library/CollectorErrorHandler/RetryWithDelay');
-const MaxRetriesReachedError = require('../../src/Library/CollectorErrorHandler/MaxRetriesReachedError');
+const RetryWithDelay = require('../../src/DataCollector/CollectorErrorHandler/RetryWithDelay');
+const MaxRetriesReachedError = require('../../src/DataCollector/Errors/MaxRetriesReachedError');
 
 describe('RetryWithDelay', () => {
     describe('constructor', () => {
