@@ -198,3 +198,4 @@ $RECYCLE.BIN/
 /build
 deploy.zip
 download_logs.sh
+/backups/
