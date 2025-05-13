@@ -1,61 +1,44 @@
-const {fork} = require('child_process')
+const Logger = require("./src/DataCollector/Loggers/MasterProcessLogger")
+const ProcessManager = require("./src/Processes/ProcessManager");
 
-const Logger = require("./Library/Loggers/MasterProcessLogger")
-
-const SERVER = {
-    name: "SERVER",
-    path: './server'
-}
-const COLLECTOR = {
-    name: "COLLECTOR",
-    path: './collector'
-}
-
-const PROCESS_MAP = {}
-
-const start = async () => {
-    Logger.info(`Started MasterProcess with pid ${process.ppid}`);
-
-    startChildProcess(COLLECTOR.name, COLLECTOR.path)
-    startChildProcess(SERVER.name, SERVER.path)
-};
-
-function startChildProcess(pName, pPath) {
-    const child = fork(pPath);
-
-    PROCESS_MAP[pName] = child;
-
-    Logger.info(`Process ${pName} started with PID : ${child.pid}`);
-
-    child.on("exit", (code, signal) => {
-        if (code !== 0) {
-            Logger.info(`Process ${pName} crashed with code ${code}. Restarting...`)
-            startChildProcess(pName, pPath);
-
-        } else {
-            Logger.info(`Process ${pName} exited with code ${code}.`)
-        }
-    })
-
-    child.on("error", (error) => {
-        Logger.info(`ERROR: Failed to start process ${pName} : ${child.pid}`);
-        Logger.error(error)
-    })
-
-    Logger.info(`setting up message relaying for ${pName}`)
-    child.on("message", (msg) => {
-        if (msg.to) {
-            Logger.info(`Relaying message from ${msg.from} to ${msg.to} : ${msg.code}`)
-            if (pName !== msg.to)
-                PROCESS_MAP[msg.to].send(msg);
-        }
-    })
-}
-
-(() => {
-    try {
-        start();
-    } catch (e) {
-        Logger.error(e)
+class Application {
+    constructor() {
+        this.processManager = new ProcessManager();
     }
-})()
+
+    async start() {
+        try {
+            await this.processManager.initialize();
+
+            // Logger.info('Testing message routing between processes...');
+            // const routingWorks = await this.processManager.testMessageRouting();
+            //
+            // if (!routingWorks) {
+            //     Logger.warn('Message routing test failed - system may not function properly');
+            // } else {
+            //     Logger.info('Message routing test successful!');
+            // }
+
+        } catch (error) {
+            Logger.error(error);
+            await this.shutdown();
+        }
+    }
+
+    async shutdown() {
+        await this.processManager.shutdown();
+        process.exit(1);
+    }
+}
+
+(async () => {
+    try {
+        const app = new Application();
+        await app.start();
+    } catch (e) {
+        Logger.error(e);
+        process.exit(1);
+    }
+})();
+
+

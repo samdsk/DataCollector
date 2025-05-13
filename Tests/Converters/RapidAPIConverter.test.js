@@ -1,5 +1,5 @@
-const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
-const RapiAPIRequestSender = require("../../Library/RequestSenders/RapiAPIRequestSender");
+const RapidAPIConverter = require("../../src/DataCollector/Converters/RapidAPIConverter");
+const RapiAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
 const example_rapidapi_jobpost = {
     id: "QSxkLGQsZSx0LHQsbywgLEMsYSx0LGUscixpLG4sZywgLEEsZSxyLG8scCxvLHIsdCxvLCAsRixpLHU=",
     title: "Addetto Catering Aeroporto Fiumicino (697941)",
@@ -37,14 +37,14 @@ describe("RapidAPI Converter", () => {
         );
         expect(response.text).toEqual(example_rapidapi_jobpost.description);
         expect(response.icu_locale_language_tag).toEqual(icu_locale);
-        expect(response.data_provider).toEqual("RapidAPI");
+        expect(response.data_provider).toEqual(RapiAPIRequestSender_v02.DATA_PROVIDER);
 
         expect(response.links.length).toBe(1);
         expect(response.links[0].source).toBe(
             example_rapidapi_jobpost.jobProviders[0].jobProvider
         );
 
-        expect(response.author).toEqual(RapiAPIRequestSender.DATA_PROVIDER);
+        expect(response.author).toEqual(RapiAPIRequestSender_v02.DATA_PROVIDER);
     });
 
     test("invalid job_type", () => {

@@ -1,7 +1,7 @@
-const BackgroundService = require("../../Services/BackgroundService");
-const AnnotatorService = require("../../Services/AnnotatorService");
-const TransactionWrapper = require("../../Database/TransactionWrapper");
-const {Background} = require("../../Models/Background");
+const BackgroundService = require("../../src/Services/BackgroundService");
+const AnnotatorService = require("../../src/Services/AnnotatorService");
+const TransactionWrapper = require("../../src/Database/TransactionWrapper");
+const {Background} = require("../../src/Models/Background");
 
 describe("Background Service", () => {
     beforeEach(() => jest.restoreAllMocks());
