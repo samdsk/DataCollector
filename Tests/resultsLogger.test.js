@@ -1,8 +1,8 @@
 const {
     logResultsToJSONFile,
-    RES_DIR,
+    RESULTS_DIR,
     getPathCompatibleStringFromDate,
-} = require("../Library/resultsLogger");
+} = require("../src/DataCollector/Loggers/ResultsLogger");
 
 const fs = require("fs").promises;
 
@@ -38,7 +38,7 @@ describe("Custom JSON logger", () => {
     const filename = "test_filename";
     const date = new Date(Date.now());
     const timeStamp = getPathCompatibleStringFromDate(date);
-    const fullPath = `${RES_DIR}${filename}_${timeStamp}.json`;
+    const fullPath = `${RESULTS_DIR}/${filename}_${timeStamp}.json`;
 
     afterAll(async () => {
         try {

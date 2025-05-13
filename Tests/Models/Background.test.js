@@ -1,6 +1,6 @@
 const {connect, close, clearDatabase} = require("../db_handler");
 
-const {Background} = require("../../Models/Background");
+const {Background} = require("../../src/Models/Background");
 
 const delete_list = ["backgrounds"];
 

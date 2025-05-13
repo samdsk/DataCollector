@@ -1,12 +1,12 @@
-const JobPostController = require("../../Controllers/JobPostController");
-const JobPostService = require("../../Services/JobPostService");
-const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
+const JobPostHandler = require("../../src/DataCollector/Handlers/JobPostHandler");
+const JobPostService = require("../../src/Services/JobPostService");
+const RapidAPIConverter = require("../../src/DataCollector/Converters/RapidAPIConverter");
 
-describe("JobPostController: ", () => {
+describe("JobPostHandler: ", () => {
     beforeEach(() => jest.restoreAllMocks());
 
     it("insert single job post", async () => {
-        const jobPostController = new JobPostController(
+        const jobPostHandler = new JobPostHandler(
             RapidAPIConverter,
             JobPostService
         );
@@ -21,14 +21,14 @@ describe("JobPostController: ", () => {
 
         const job = {};
         const job_type = "job_type";
-        await jobPostController.insertJob(job, job_type);
+        await jobPostHandler.insertJob(job, job_type);
 
         expect(spyConverter).toHaveBeenCalled();
         expect(spyJobPostService).toHaveBeenCalled();
     });
 
     it("insert a list of job posts", async () => {
-        const jobPostController = new JobPostController(
+        const jobPostHandler = new JobPostHandler(
             RapidAPIConverter,
             JobPostService
         );
@@ -43,7 +43,7 @@ describe("JobPostController: ", () => {
 
         const jobs = ["1", "2"];
         const job_type = "job_type";
-        await jobPostController.insertListOfJobs(jobs, job_type);
+        await jobPostHandler.insertListOfJobs(jobs, job_type);
 
         expect(spyConverter).toHaveBeenCalledTimes(2);
         expect(spyJobPostService).toHaveBeenCalledTimes(2);

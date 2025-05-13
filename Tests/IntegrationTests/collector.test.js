@@ -1,13 +1,10 @@
-const Collector = require("../../Library/Collectors/RapidAPICollector.js");
+const Collector = require("../../src/DataCollector/Collectors/RapidAPICollector.js");
 const {connect, close, clearDatabase} = require("../db_handler");
-const {
-    RapidAPIRequestSender,
-    DATA_PROVIDER,
-} = require("../../Library/RequestSenders/RapiAPIRequestSender");
-const RapidAPIConverter = require("../../Library/Converters/RapidAPIConverter");
-const JobPostService = require("../../Services/JobPostService.js");
-const {JobPostController} = require("../../Controllers/JobPostController");
-const DataProviderService = require("../../Services/DataProviderService.js");
+const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
+const RapidAPIConverter = require("../../src/DataCollector/Converters/RapidAPIConverter");
+const JobPostService = require("../../src/Services/JobPostService.js");
+const JobPostHandler = require("../../src/DataCollector/Handlers/JobPostHandler");
+const DataProviderService = require("../../src/Services/DataProviderService.js");
 const axios = require("axios");
 
 require("dotenv").config();
@@ -39,9 +36,10 @@ const response_example = {
     location: "Italia",
     language: "it_IT",
     job_type: "Example",
-    data_provider: DATA_PROVIDER,
+    data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
     index: 0,
     jobCount: 4,
+    nextPage: "nextpage",
     hasError: false,
     errors: [],
 };
@@ -51,7 +49,7 @@ jest.mock("axios");
 describe("Collector Integration Test:", () => {
     beforeAll(async () => {
         await connect();
-        await DataProviderService.create("rapidapi");
+        await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
     });
 
     afterAll(async () => {
@@ -71,8 +69,8 @@ describe("Collector Integration Test:", () => {
             job_type: jobType,
         };
 
-        const requestSender = new RapidAPIRequestSender();
-        const controller = new JobPostController(RapidAPIConverter, JobPostService);
+        const requestSender = new RapidAPIRequestSender_v02();
+        const controller = new JobPostHandler(RapidAPIConverter, JobPostService);
         const collector = new Collector(requestSender, controller);
 
         axios.request.mockResolvedValue({

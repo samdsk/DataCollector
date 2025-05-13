@@ -1,10 +1,10 @@
 const {connect, close, clearDatabase} = require("../db_handler");
 
-const {JobPost} = require("../../Models/JobPost");
-const {Text} = require("../../Models/Text");
-const {VideoPost} = require("../../Models/VideoPost");
+const {JobPost} = require("../../src/Models/JobPost");
+const {Text} = require("../../src/Models/Text");
+const {VideoPost} = require("../../src/Models/VideoPost");
 const {default: mongoose} = require("mongoose");
-const {DataProvider} = require("../../Models/DataProvider");
+const {DataProvider} = require("../../src/Models/DataProvider");
 
 const delete_list = ["texts"];
 
