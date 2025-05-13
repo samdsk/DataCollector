@@ -21,6 +21,11 @@ class RapidAPICollectionProcess {
 
             const results = await automator.collect(jobList);
 
+            if (this.schedulerManager && this.schedulerManager.scheduler) {
+                const nextRun = this.schedulerManager.scheduler.getNextExecutionTime();
+                Logger.info(`RapidAPIProcess : Collecting successfully finished. Next scheduled run is at: ${nextRun}`);
+            }
+
             return await this.resultProcessor.process(results);
         } catch (error) {
             Logger.info("RapidAPIProcess : Something went wrong in collection process");
