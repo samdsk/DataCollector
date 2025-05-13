@@ -1,4 +1,4 @@
-const JobPostHandler = require('../../Library/Handlers/JobPostHandler');
+const JobPostHandler = require('../../src/Library/Handlers/JobPostHandler');
 
 describe('JobPostHandler', () => {
     let mockConverter;

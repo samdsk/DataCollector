@@ -1,12 +1,12 @@
-const ChildProcess = require('../../Processes/ChildProcess');
+const ChildProcess = require('../../src/Processes/ChildProcess');
 const {fork} = require('child_process');
-const Logger = require('../../Library/Loggers/MasterProcessLogger');
+const Logger = require('../../src/Library/Loggers/MasterProcessLogger');
 
 jest.mock('child_process', () => ({
     fork: jest.fn(),
 }));
 
-jest.mock('../../Library/Loggers/MasterProcessLogger', () => ({
+jest.mock('../../src/Library/Loggers/MasterProcessLogger', () => ({
     info: jest.fn(),
     error: jest.fn(),
 }));

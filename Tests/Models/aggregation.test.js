@@ -2,17 +2,17 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 
-const pipeline = require("../../Database/finetune_pipeline");
+const pipeline = require("../../src/Database/finetune_pipeline");
 
-const {Annotation} = require("../../Models/Annotation");
-const {Annotator} = require("../../Models/Annotator");
-const {Background} = require("../../Models/Background");
-const {Domain} = require("../../Models/Domain");
-const {JobPost} = require("../../Models/JobPost");
-const {Label} = require("../../Models/Label");
-const {Role} = require("../../Models/Role");
-const OutputLLM = require("../../Models/OutputLLM");
-const {DataProvider} = require("../../Models/DataProvider");
+const {Annotation} = require("../../src/Models/Annotation");
+const {Annotator} = require("../../src/Models/Annotator");
+const {Background} = require("../../src/Models/Background");
+const {Domain} = require("../../src/Models/Domain");
+const {JobPost} = require("../../src/Models/JobPost");
+const {Label} = require("../../src/Models/Label");
+const {Role} = require("../../src/Models/Role");
+const OutputLLM = require("../../src/Models/OutputLLM");
+const {DataProvider} = require("../../src/Models/DataProvider");
 
 const init_setup = async () => {
     const role_1 = {

@@ -1,5 +1,5 @@
-const RapidAPICollectionProcess = require('../../Library/CollectionProcesses/RapidAPICollectionProcess');
-const Logger = require("../../Library/Loggers/CollectorLogger");
+const RapidAPICollectionProcess = require('../../src/Library/CollectionProcesses/RapidAPICollectionProcess');
+const Logger = require("../../src/Library/Loggers/CollectorLogger");
 
 describe('RapidAPICollectionProcess', () => {
     let automatorFactoryMock, resultProcessorMock, configLoaderMock, rapidAPICollectionProcess;

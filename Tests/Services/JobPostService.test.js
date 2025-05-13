@@ -1,9 +1,9 @@
-const JobPostService = require("../../Services/JobPostService");
-const AnnotationService = require("../../Services/AnnotationService");
-const {JobPost} = require("../../Models/JobPost");
-const {Text} = require("../../Models/Text");
-const DataProviderService = require("../../Services/DataProviderService");
-const TransactionWrapper = require("../../Database/TransactionWrapper");
+const JobPostService = require("../../src/Services/JobPostService");
+const AnnotationService = require("../../src/Services/AnnotationService");
+const {JobPost} = require("../../src/Models/JobPost");
+const {Text} = require("../../src/Models/Text");
+const DataProviderService = require("../../src/Services/DataProviderService");
+const TransactionWrapper = require("../../src/Database/TransactionWrapper");
 
 const opts = {runValidators: true};
 

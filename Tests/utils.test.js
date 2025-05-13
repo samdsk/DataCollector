@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Utils = require("../Library/Utils/Utils");
+const Utils = require("../src/Library/Utils/Utils");
 
 require("dotenv").config();
 
