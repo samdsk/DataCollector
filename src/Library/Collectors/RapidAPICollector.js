@@ -29,7 +29,7 @@ class Collector {
 
     async logFullResponse(job_type, date, response) {
         await ResultLogger.logResultsToJSONFile(
-            `full_results/${job_type}`,
+            `full_response_${job_type}`,
             date,
             response
         );
