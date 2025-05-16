@@ -26,7 +26,7 @@ describe('JobPostHandler', () => {
             mockConverter.convert.mockReturnValue(convertedJob);
             mockJobPostService.create.mockResolvedValue(createdJob);
 
-            const result = await jobPostHandler.insertJob(job, jobType, language);
+            const result = await jobPostHandler.insert(job, jobType, language);
 
             expect(mockConverter.convert).toHaveBeenCalledWith(job, jobType, language);
             expect(mockJobPostService.create).toHaveBeenCalledWith(convertedJob);
@@ -42,28 +42,28 @@ describe('JobPostHandler', () => {
                 throw new Error('Conversion error');
             });
 
-            const result = await jobPostHandler.insertJob(job, jobType, language);
+            const result = await jobPostHandler.insert(job, jobType, language);
 
             expect(mockConverter.convert).toHaveBeenCalledWith(job, jobType, language);
             expect(result).toBeNull();
         });
     });
 
-    describe('insertListOfJobs', () => {
+    describe('insertList', () => {
         it('should handle multiple jobs insertion and return the count of successfully inserted jobs', async () => {
             const jobs = [{title: 'Job1'}, {title: 'Job2'}];
             const jobType = 'part-time';
             const language = 'fr';
 
-            jest.spyOn(jobPostHandler, 'insertJob')
+            jest.spyOn(jobPostHandler, 'insert')
                 .mockResolvedValueOnce({id: 1})
                 .mockResolvedValueOnce(null);
 
-            const result = await jobPostHandler.insertListOfJobs(jobs, jobType, language);
+            const result = await jobPostHandler.insertList(jobs, jobType, language);
 
-            expect(jobPostHandler.insertJob).toHaveBeenCalledTimes(2);
-            expect(jobPostHandler.insertJob).toHaveBeenCalledWith(jobs[0], jobType, language);
-            expect(jobPostHandler.insertJob).toHaveBeenCalledWith(jobs[1], jobType, language);
+            expect(jobPostHandler.insert).toHaveBeenCalledTimes(2);
+            expect(jobPostHandler.insert).toHaveBeenCalledWith(jobs[0], jobType, language);
+            expect(jobPostHandler.insert).toHaveBeenCalledWith(jobs[1], jobType, language);
             expect(result).toBe(1);
         });
     });
