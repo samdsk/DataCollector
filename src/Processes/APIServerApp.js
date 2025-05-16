@@ -16,7 +16,7 @@ const morganMiddleware = morgan(
 );
 
 const express = require("express");
-const processAPIServer = express();
+const APIServerApp = express();
 
 const api_route = require("../Routes/ApiRouter");
 const login_route = require("../Routes/LoginRouter");
@@ -25,14 +25,14 @@ const ErrorHandler = require("../Middlewares/ErrorHandler");
 const {authentication} = require("../Middlewares/Authentication");
 const PORT = process.env.PORT || 3000;
 
-processAPIServer.use(morganMiddleware);
-processAPIServer.use(express.json());
+APIServerApp.use(morganMiddleware);
+APIServerApp.use(express.json());
 
-processAPIServer.use("/api", authentication, api_route);
-processAPIServer.use("/login", login_route);
-processAPIServer.use("/user", user_route);
+APIServerApp.use("/api", authentication, api_route);
+APIServerApp.use("/login", login_route);
+APIServerApp.use("/user", user_route);
 
-processAPIServer.use(ErrorHandler);
+APIServerApp.use(ErrorHandler);
 
 
 const isPortAvailable = (port) => {
@@ -70,7 +70,7 @@ const start = async () => {
 
 
         await db_connect(process.env.DB_PROD_URL);
-        processAPIServer.listen(PORT, () =>
+        APIServerApp.listen(PORT, () =>
             Logger.info(`Server is up and running at port: ${PORT}`)
         );
     } catch (error) {
