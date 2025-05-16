@@ -45,10 +45,10 @@ describe("Scheduler:", () => {
 
     it("run scheduler", async () => {
         const spy = jest
-            .spyOn(automator, "collect")
+            .spyOn(automator, "automate")
             .mockImplementation(async () => Promise.resolve());
 
-        emitter.on(EVENT, () => automator.collect());
+        emitter.on(EVENT, () => automator.automate());
 
         scheduler.start("* * * * * *");
         jest.advanceTimersByTime(3000);
