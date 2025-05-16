@@ -41,7 +41,7 @@ class Collector {
      * @param {Object} [RequestOptions] Object which contains optionalParams of sendRequest method
      * @returns an Object containing a summary of collected data and an array of actual data obtained from API
      */
-    async searchJobsByType(JOB_TYPE, RequestOptions) {
+    async collect(JOB_TYPE, RequestOptions) {
         const searchDate = new Date(Date.now());
 
         let searchResults = {
@@ -125,10 +125,10 @@ class Collector {
      * @param {Object} [RequestOptions] Object which contains optionalParams of sendRequest method
      * @returns [Object] returns an array of results per job type
      */
-    async searchJobTypeList(JobTypes, RequestOptions) {
+    async collectList(JobTypes, RequestOptions) {
         const results = [];
         for (const job_type of JobTypes) {
-            const tempRes = await this.searchJobsByType(job_type, RequestOptions);
+            const tempRes = await this.collect(job_type, RequestOptions);
             results.push({job_type: job_type, response: tempRes});
         }
 
