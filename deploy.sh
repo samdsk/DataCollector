@@ -30,24 +30,25 @@ scp $ZIP_NAME $ENV_FILE $USER@$HOST:/home/$USER/
 # SSH into Raspberry Pi and deploy
 echo "==> Connecting via SSH and deploying..."
 ssh $USER@$HOST << EOF
+
 mkdir -p $TMP_DIR
 unzip -o $ZIP_NAME -d $TMP_DIR > /dev/null
 
 # Ensure target exists and backup Results and Logs if necessary
 mkdir -p $REMOTE_DIR
-mkdir -p $REMOTE_DIR/Results $REMOTE_DIR/Logs
+mkdir -p $REMOTE_DIR/results $REMOTE_DIR/logs
 
 # Move existing logs and results temporarily
-mv $REMOTE_DIR/Results $TMP_DIR/Results_backup 2>/dev/null
-mv $REMOTE_DIR/Logs $TMP_DIR/Logs_backup 2>/dev/null
+mv $REMOTE_DIR/results $TMP_DIR/results_backup 2>/dev/null
+mv $REMOTE_DIR/logs $TMP_DIR/logs_backup 2>/dev/null
 
 # Copy build files and .env
 cp -r $TMP_DIR/* $REMOTE_DIR/
 cp $ENV_FILE $REMOTE_DIR/
 
 # Restore preserved folders
-mv $TMP_DIR/Results_backup $REMOTE_DIR/Results 2>/dev/null
-mv $TMP_DIR/Logs_backup $REMOTE_DIR/Logs 2>/dev/null
+mv $TMP_DIR/results_backup $REMOTE_DIR/results 2>/dev/null
+mv $TMP_DIR/logs_backup $REMOTE_DIR/logs 2>/dev/null
 
 # Cleanup temporary folder and zip
 rm -rf $TMP_DIR $ZIP_NAME $ENV_FILE
@@ -72,5 +73,5 @@ pm2 save
 TIMESTAMP=\$(date '+%Y-%m-%d %H:%M:%S')
 echo "==> [\$TIMESTAMP] Deploy completed on Raspberry Pi!"
 
-pm2 logs $PM2_NAME --lines 50
+pm2 logs $PM2_NAME --lines 500
 EOF
