@@ -6,7 +6,7 @@ class JobPostHandler {
         this.jobPostService = jobPostService;
     }
 
-    async insertJob(job, job_type, language) {
+    async insert(job, job_type, language) {
         try {
             const jobPost = this.converter.convert(job, job_type, language);
             return await this.jobPostService.create(jobPost);
@@ -16,11 +16,11 @@ class JobPostHandler {
         }
     }
 
-    async insertListOfJobs(jobs, job_type, language) {
+    async insertList(jobs, job_type, language) {
         let count = 0;
 
         for (const job of jobs) {
-            const res = await this.insertJob(job, job_type, language);
+            const res = await this.insert(job, job_type, language);
             if (res) count++;
         }
 

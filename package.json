@@ -1,6 +1,6 @@
 {
   "name": "data_collector",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "This web application is designed to collect data for LLM training, it's periodically collects data from third party data sources and provides an API to manipulate and access them.",
   "main": "index.js",
   "scripts": {

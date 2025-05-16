@@ -136,7 +136,7 @@ class Collector {
     }
 
     async insertJobs(jobs, job_type, language) {
-        return await this.JobPostHandler.insertListOfJobs(
+        return await this.JobPostHandler.insertList(
             jobs,
             job_type,
             language

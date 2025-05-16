@@ -58,7 +58,7 @@ const addJobDescriptionsFromFile = async (filename) => {
 
     let count = 0;
     for (const job of jobs.jobs) {
-        const added = await controller.insertJob(job, additionalDetails);
+        const added = await controller.insert(job, additionalDetails);
         if (added) count++;
     }
 
