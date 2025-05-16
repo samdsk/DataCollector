@@ -86,7 +86,7 @@ describe("Collector Integration Test:", () => {
 
         const job_type = "JobType";
 
-        const response = await collector.searchJobsByType(job_type);
+        const response = await collector.collect(job_type);
 
         expect((await JobPostService.getAll()).length).toBe(1);
     });
