@@ -107,7 +107,7 @@ describe("Collector: ", () => {
 
         const job_type = "job_type";
 
-        await collector.searchJobsByType(job_type);
+        await collector.collect(job_type);
 
         expect(spySender).toHaveBeenCalled();
         expect(spyController).toHaveBeenCalled();
@@ -134,7 +134,7 @@ describe("Collector: ", () => {
 
         const job_type = "job_type";
 
-        await collector.searchJobsByType(job_type);
+        await collector.collect(job_type);
 
         expect(spySender).toHaveBeenCalledTimes(2);
         expect(spyController).toHaveBeenCalled();
@@ -160,7 +160,7 @@ describe("Collector: ", () => {
 
         const job_type = "job_type";
 
-        await collector.searchJobsByType(job_type);
+        await collector.collect(job_type);
 
         const LIMIT = parseInt(process.env.REQUEST_LIMIT, 10);
 
@@ -174,12 +174,12 @@ describe("Collector: ", () => {
         const collector = new Collector(sender, controller);
 
         const spySearch = jest
-            .spyOn(Collector.prototype, "searchJobsByType")
+            .spyOn(Collector.prototype, "collect")
             .mockImplementation(async () => Promise.resolve());
 
         const job_types = ["job_type1", "job_type2"];
 
-        await collector.searchJobTypeList(job_types);
+        await collector.collectList(job_types);
 
         expect(spySearch).toHaveBeenCalledTimes(2);
     });

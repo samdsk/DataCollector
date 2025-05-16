@@ -18,7 +18,7 @@ class RapidAPIAutomator {
         this.retryHandler.setExcludedErrorCodes(RapidAPIAutomator.KEY_DELETE_ERROR_CODES);
     }
 
-    async collect(jobTypesList, options = {}) {
+    async automate(jobTypesList, options = {}) {
         const results = [];
 
         for (const key of this.keys) {
@@ -45,7 +45,7 @@ class RapidAPIAutomator {
             const context = {key, jobType, options};
             await this.retryHandler.execute(
                 async () => {
-                    const response = await this.collector.searchJobsByType(jobType, options);
+                    const response = await this.collector.collect(jobType, options);
                     Logger.debug(JSON.stringify(response));
                     results.push(response);
                     options.requestedPage = "";
