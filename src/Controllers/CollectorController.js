@@ -7,7 +7,7 @@ const CURRENT_PROCESS = ProcessTypes.SERVER.name;
 const SEND_TO = ProcessTypes.COLLECTOR.name;
 
 const triggerCollector = async (req, res, next) => {
-    const collect = req.body.collect || false;
+    const collect = req.body.automate || false;
     let status = 400;
     if (collect === true) {
         Logger.info("Triggering collector.")

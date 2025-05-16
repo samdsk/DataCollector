@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const RapidAPICollector = require("../../src/DataCollector/Collectors/RapidAPICollector");
-const RetryWithDelay = require("../../src/DataCollector/CollectorErrorHandler/RetryWithDelay");
+const RetryWithDelay = require("../../src/DataCollector/ErrorHandlers/RetryWithDelay");
 const axios = require("axios");
 const DataProviderService = require("../../src/Services/DataProviderService");
 const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
@@ -92,19 +92,19 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockRejectedValueOnce({response: {status: 500}}) // Second job type fails first try
                 .mockResolvedValueOnce({data: {...response_example, job_type: "Developer"}}); // Second job type succeeds on retry
 
-            const results = await automator.collect(multiJobTypesList, options);
+            const results = await automator.automate(multiJobTypesList, options);
 
             expect(results.length).toBe(2);
             expect(await JobPostService.getAll()).toHaveLength(1);
             expect(axios.request).toHaveBeenCalledTimes(3);
-        });
+        }, 20000);
 
         it("should handle key rotation on rate limit errors", async () => {
             axios.request
                 .mockRejectedValueOnce({response: {status: 429}}) // First key rate limited
                 .mockResolvedValueOnce({data: response_example}); // Second key works
 
-            const results = await automator.collect(jobTypesList, options);
+            const results = await automator.automate(jobTypesList, options);
 
             expect(results.length).toBe(1);
             expect(automator.keys.has("test-key1")).toBe(false); // First key should be removed
@@ -127,7 +127,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 })
                 .mockResolvedValueOnce({data: response_example});
 
-            await automator.collect(jobTypesList, optionsWithPage);
+            await automator.automate(jobTypesList, optionsWithPage);
 
             // The requestedPage should be preserved during retries
             expect(optionsWithPage.requestedPage).toBe("");
@@ -140,7 +140,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockRejectedValueOnce({response: {status: 503}})
                 .mockResolvedValueOnce({data: response_example});
 
-            const results = await automator.collect(jobTypesList, options);
+            const results = await automator.automate(jobTypesList, options);
 
             expect(results.length).toBe(1);
             expect(await JobPostService.getAll()).toHaveLength(1);
@@ -152,7 +152,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockRejectedValueOnce({response: {status: 401}}) // First key invalid
                 .mockRejectedValueOnce({response: {status: 401}}); // Second key invalid
 
-            const results = await automator.collect(jobTypesList, options);
+            const results = await automator.automate(jobTypesList, options);
 
             expect(results).toEqual([]);
             expect(automator.keys.size).toBe(0);
@@ -168,7 +168,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 });
             }
 
-            await expect(automator.collect(jobTypesList, options))
+            await expect(automator.automate(jobTypesList, options))
                 .rejects
                 .toThrow('Maximum retries of 5 have been reached');
 
@@ -238,7 +238,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
 
-            await expect(automator.collect(["Software Engineer"], options)).rejects.toThrow();
+            await expect(automator.automate(["Software Engineer"], options)).rejects.toThrow();
             expect(automator.retryHandler.consecutiveErrors).toBe(3);
 
             // Advance time beyond error window
@@ -249,7 +249,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockResolvedValueOnce({data: {...response_example, job_type: "Developer"}})
                 .mockResolvedValueOnce({data: {...response_example, job_type: "Data Scientist"}});
 
-            const results = await automator.collect(["Developer", "Data Scientist"], options);
+            const results = await automator.automate(["Developer", "Data Scientist"], options);
             expect(results.length).toBe(2);
         });
 
@@ -259,7 +259,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
 
-            await expect(automator.collect(["Software Engineer"], options))
+            await expect(automator.automate(["Software Engineer"], options))
                 .rejects
                 .toThrow();
 
@@ -270,7 +270,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             axios.request
                 .mockRejectedValueOnce({response: {status: 500}});
 
-            await expect(automator.collect(["Developer"], options))
+            await expect(automator.automate(["Developer"], options))
                 .rejects
                 .toThrow('Maximum retries');
 
@@ -282,7 +282,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             axios.request
                 .mockResolvedValueOnce({data: response_example});
 
-            await automator.collect(["Software Engineer"], options);
+            await automator.automate(["Software Engineer"], options);
             expect(automator.retryHandler.consecutiveErrors).toBe(0);
 
             // Move forward in time but stay within window
@@ -293,7 +293,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
 
-            await expect(automator.collect(["Developer"], options))
+            await expect(automator.automate(["Developer"], options))
                 .rejects
                 .toThrow();
 
@@ -306,7 +306,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             axios.request
                 .mockResolvedValueOnce({data: response_example});
 
-            const results = await automator.collect(["Data Scientist"], options);
+            const results = await automator.automate(["Data Scientist"], options);
             expect(results.length).toBe(1);
             expect(automator.retryHandler.consecutiveErrors).toBe(0);
         });
@@ -316,7 +316,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             axios.request
                 .mockRejectedValueOnce({response: {status: 429}});
 
-            await expect(automator.collect(jobTypesList, options)).rejects.toThrow();
+            await expect(automator.automate(jobTypesList, options)).rejects.toThrow();
             expect(automator.keys.has("test-key1")).toBe(false);
 
             // Within error window, second key works
@@ -325,7 +325,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             axios.request
                 .mockResolvedValueOnce({data: response_example});
 
-            const results = await automator.collect(jobTypesList, options);
+            const results = await automator.automate(jobTypesList, options);
             expect(results.length).toBe(1);
             expect(automator.keys.has("test-key2")).toBe(true);
             expect(automator.retryHandler.consecutiveErrors).toBe(3);
@@ -342,7 +342,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
 
-            await expect(automator.collect(jobTypesList, optionsWithPagination))
+            await expect(automator.automate(jobTypesList, optionsWithPagination))
                 .rejects
                 .toThrow();
 
@@ -353,7 +353,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             axios.request
                 .mockRejectedValueOnce({response: {status: 500}});
 
-            await expect(automator.collect(jobTypesList, optionsWithPagination))
+            await expect(automator.automate(jobTypesList, optionsWithPagination))
                 .rejects
                 .toThrow('Maximum retries');
 

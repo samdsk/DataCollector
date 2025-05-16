@@ -1,6 +1,6 @@
 const Logger = require("../Loggers/CollectorLogger");
 
-class RapidAPICollectionProcess {
+class RapidAPICollectorProcess {
     constructor(automatorFactory, resultProcessor, configLoader, schedulerManager) {
         this.automatorFactory = automatorFactory;
         this.resultProcessor = resultProcessor;
@@ -19,7 +19,7 @@ class RapidAPICollectionProcess {
 
             const automator = this.automatorFactory.createAutomator(keys);
 
-            const results = await automator.collect(jobList);
+            const results = await automator.automate(jobList);
 
             if (this.schedulerManager && this.schedulerManager.scheduler) {
                 const nextRun = this.schedulerManager.scheduler.getNextExecutionTime();
@@ -43,4 +43,4 @@ class RapidAPICollectionProcess {
     }
 }
 
-module.exports = RapidAPICollectionProcess;
+module.exports = RapidAPICollectorProcess;
