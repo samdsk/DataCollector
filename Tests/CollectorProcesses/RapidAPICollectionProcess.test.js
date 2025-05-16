@@ -1,4 +1,4 @@
-const RapidAPICollectionProcess = require('../../src/DataCollector/CollectionProcesses/RapidAPICollectionProcess');
+const RapidAPICollectionProcess = require('../../src/DataCollector/CollectorProcesses/RapidAPICollectorProcess');
 const Logger = require("../../src/DataCollector/Loggers/CollectorLogger");
 
 describe('RapidAPICollectionProcess', () => {
@@ -45,7 +45,7 @@ describe('RapidAPICollectionProcess', () => {
         configLoaderMock.loadKeys.mockResolvedValue(keysMock);
         configLoaderMock.validateConfiguration.mockReturnValue(true);
         const automatorMock = {
-            collect: jest.fn().mockResolvedValue(resultsMock),
+            automate: jest.fn().mockResolvedValue(resultsMock),
         };
         automatorFactoryMock.createAutomator.mockReturnValue(automatorMock);
         resultProcessorMock.process.mockResolvedValue(processedResultsMock);
@@ -56,7 +56,7 @@ describe('RapidAPICollectionProcess', () => {
         expect(configLoaderMock.loadKeys).toHaveBeenCalled();
         expect(configLoaderMock.validateConfiguration).toHaveBeenCalledWith(jobListMock, keysMock);
         expect(automatorFactoryMock.createAutomator).toHaveBeenCalledWith(keysMock);
-        expect(automatorMock.collect).toHaveBeenCalledWith(jobListMock);
+        expect(automatorMock.automate).toHaveBeenCalledWith(jobListMock);
         expect(resultProcessorMock.process).toHaveBeenCalledWith(resultsMock);
         expect(result).toEqual(processedResultsMock);
     });
