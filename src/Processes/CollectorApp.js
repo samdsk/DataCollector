@@ -9,12 +9,15 @@ const RapidAPIAutomatorFactory = require("../DataCollector/Factories/RapidAPIAut
 const RapidAPICollectionProcess = require("../DataCollector/CollectorProcesses/RapidAPICollectorProcess");
 const RapidAPIConfigLoader = require("../DataCollector/ConfigLoaders/RapidAPIConfigLoader");
 const RapidAPIResultsProcessor = require("../DataCollector/ResultProcessors/RapidAPIResultProcessor");
-const {getDailyScheduleRule} = require("../DataCollector/Schedulers/Scheduler");
+const {Scheduler} = require("../DataCollector/Schedulers/Scheduler");
+const CollectorEventEmitter = require("../DataCollector/Schedulers/CollectorEventEmitter");
+const DailyRunStrategy = require("../DataCollector/Schedulers/RunStrategy/DailyRunStrategy");
 
 class CollectorApp {
     constructor() {
         this.processRegistry = new ProcessRegistry();
-        this.schedulerManager = new SchedulerManager(this.processRegistry, getDailyScheduleRule);
+        this.eventEmitter = new CollectorEventEmitter();
+        this.schedulerManager = new SchedulerManager(new Scheduler(this.eventEmitter), this.eventEmitter, this.processRegistry, DailyRunStrategy);
     }
 
     async start() {

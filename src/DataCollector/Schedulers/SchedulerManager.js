@@ -7,20 +7,20 @@ const CURRENT_PROCESS = ProcessTypes.COLLECTOR.name
 const SEND_TO = ProcessTypes.SERVER.name;
 
 class SchedulerManager {
-    constructor(processRegistry, nextRunStrategy) {
+    constructor(scheduler, eventEmitter, processRegistry, runStrategy) {
         this.processRegistry = processRegistry;
-        this.emitter = new CollectorEventEmitter();
-        this.scheduler = new Scheduler(this.emitter);
-        this.nextRunStrategy = nextRunStrategy;
+        this.eventEmitter = eventEmitter;
+        this.scheduler = scheduler;
+        this.runStrategy = runStrategy;
     }
 
     initialize() {
-        this.emitter.on(EVENT, async () => {
+        this.eventEmitter.on(EVENT, async () => {
             const results = await this.processRegistry.executeAll();
             Logger.info(`Executed ${results.length} processes`);
         });
 
-        this.scheduler.start(this.nextRunStrategy());
+        this.scheduler.start(this.runStrategy.getScheduleRule());
         this.setupAPITrigger();
         Logger.info(`Scheduler initialized with next execution at ${this.scheduler.getNextExecutionTime()}`);
     }
@@ -29,7 +29,7 @@ class SchedulerManager {
         process.on("message", (msg) => {
             if (msg.to === "COLLECTOR" && msg.code === API_TRIGGER) {
                 Logger.info("API trigger received.");
-                this.scheduler.emit(this.nextRunStrategy());
+                this.scheduler.emit(this.runStrategy.getScheduleRule());
                 return process.send({to: SEND_TO, from: CURRENT_PROCESS, code: 200});
             }
         });
