@@ -21,7 +21,7 @@ describe("JobPostHandler: ", () => {
 
         const job = {};
         const job_type = "job_type";
-        await jobPostHandler.insertJob(job, job_type);
+        await jobPostHandler.insert(job, job_type);
 
         expect(spyConverter).toHaveBeenCalled();
         expect(spyJobPostService).toHaveBeenCalled();
@@ -43,7 +43,7 @@ describe("JobPostHandler: ", () => {
 
         const jobs = ["1", "2"];
         const job_type = "job_type";
-        await jobPostHandler.insertListOfJobs(jobs, job_type);
+        await jobPostHandler.insertList(jobs, job_type);
 
         expect(spyConverter).toHaveBeenCalledTimes(2);
         expect(spyJobPostService).toHaveBeenCalledTimes(2);

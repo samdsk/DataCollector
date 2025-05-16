@@ -90,7 +90,7 @@ describe("Collector: ", () => {
 
     it("search JobPost by type", async () => {
         const spyController = jest
-            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertList")
             .mockImplementation(async () => Promise.resolve());
 
         const spyResultLogger = jest
@@ -116,7 +116,7 @@ describe("Collector: ", () => {
 
     it("send 2 search requests", async () => {
         const spyController = jest
-            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertList")
             .mockImplementation(async () => Promise.resolve());
 
         const spyResultLogger = jest
@@ -143,7 +143,7 @@ describe("Collector: ", () => {
 
     it("send search requests until request limit reached", async () => {
         const spyController = jest
-            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertList")
             .mockImplementation(async () => Promise.resolve());
 
         const spyResultLogger = jest
@@ -190,7 +190,7 @@ describe("Collector: ", () => {
         const collector = new Collector(sender, controller);
 
         const spyController = jest
-            .spyOn(JobPostHandler.prototype, "insertListOfJobs")
+            .spyOn(JobPostHandler.prototype, "insertList")
             .mockImplementation(async () => Promise.resolve());
 
         const job_type = "job_type";
