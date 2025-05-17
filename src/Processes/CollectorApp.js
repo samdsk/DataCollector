@@ -6,7 +6,7 @@ const Logger = require("../DataCollector/Loggers/CollectorLogger")
 const ProcessRegistry = require("../DataCollector/CollectorProcessRegistry");
 const SchedulerManager = require("../DataCollector/Schedulers/SchedulerManager");
 const RapidAPIAutomatorFactory = require("../DataCollector/Factories/RapidAPIAutomatorFactory");
-const RapidAPICollectionProcess = require("../DataCollector/CollectorProcesses/RapidAPICollectorProcess");
+const RapidAPICollectorProcess = require("../DataCollector/CollectorProcesses/RapidAPICollectorProcess");
 const RapidAPIConfigLoader = require("../DataCollector/ConfigLoaders/RapidAPIConfigLoader");
 const RapidAPIResultsProcessor = require("../DataCollector/ResultProcessors/RapidAPIResultProcessor");
 const {Scheduler} = require("../DataCollector/Schedulers/Scheduler");
@@ -42,7 +42,7 @@ class CollectorApp {
 
     registerProcesses() {
         // Register RapidAPI collection process
-        const rapidAPIProcess = new RapidAPICollectionProcess(
+        const rapidAPIProcess = new RapidAPICollectorProcess(
             RapidAPIAutomatorFactory,
             RapidAPIResultsProcessor,
             RapidAPIConfigLoader,
