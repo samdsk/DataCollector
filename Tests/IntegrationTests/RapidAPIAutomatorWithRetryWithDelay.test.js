@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const RapidAPICollector = require("../../src/DataCollector/Collectors/RapidAPICollector");
-const RetryWithDelay = require("../../src/DataCollector/ErrorHandlers/RetryWithDelay");
+const RetryWithDelay = require("../../src/DataCollector/ErrorHandlingStrategies/RetryWithDelay");
 const axios = require("axios");
 const DataProviderService = require("../../src/Services/DataProviderService");
 const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");

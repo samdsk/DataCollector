@@ -1,6 +1,6 @@
 const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
 const JobPostHandler = require("../Handlers/JobPostHandler");
-const RetryWithDelay = require("../ErrorHandlers/RetryWithDelay");
+const RetryWithDelay = require("../ErrorHandlingStrategies/RetryWithDelay");
 const RapidAPICollector = require("../Collectors/RapidAPICollector");
 const RapidAPIAutomator = require("../Automators/RapidAPIAutomator");
 const RapidAPIConverter = require("../Converters/RapidAPIConverter");

@@ -1,4 +1,4 @@
-const RetryWithDelay = require('../../src/DataCollector/ErrorHandlers/RetryWithDelay');
+const RetryWithDelay = require('../../src/DataCollector/ErrorHandlingStrategies/RetryWithDelay');
 const MaxRetriesReachedError = require('../../src/DataCollector/Errors/MaxRetriesReachedError');
 
 describe('RetryWithDelay', () => {
