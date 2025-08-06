@@ -33,6 +33,25 @@ function displayStartupBanner() {
 
     };
 
+    const bannerArt = [
+        createBoxLine(),
+        createBoxLine('   ██████╗  █████╗ ████████╗ █████╗'),
+        createBoxLine('   ██╔══██╗██╔══██╗╚══██╔══╝██╔══██╗'),
+        createBoxLine('   ██║  ██║███████║   ██║   ███████║'),
+        createBoxLine('   ██║  ██║██╔══██║   ██║   ██╔══██║'),
+        createBoxLine('   ██████╔╝██║  ██║   ██║   ██║  ██║'),
+        createBoxLine('   ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝'),
+        createBoxLine(),
+        createBoxLine('   ██████╗ ██████╗ ██╗     ██╗     ███████╗ ██████╗████████╗ ██████╗ ██████╗'),
+        createBoxLine('  ██╔════╝██╔═══██╗██║     ██║     ██╔════╝██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗'),
+        createBoxLine('  ██║     ██║   ██║██║     ██║     █████╗  ██║        ██║   ██║   ██║██████╔╝'),
+        createBoxLine('  ██║     ██║   ██║██║     ██║     ██╔══╝  ██║        ██║   ██║   ██║██╔══██╗'),
+        createBoxLine('  ╚██████╗╚██████╔╝███████╗███████╗███████╗╚██████╗   ██║   ╚██████╔╝██║  ██║'),
+        createBoxLine('   ╚═════╝ ╚═════╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝'),
+        createBoxLine()
+    ];
+
+
     // Helper for creating the top/bottom borders
     const topBorder = `╔${'═'.repeat(innerWidth)}╗`;
     const bottomBorder = `╚${'═'.repeat(innerWidth)}╝`;
@@ -64,6 +83,9 @@ function displayStartupBanner() {
     const descMaxWidth = contentWidth - labelWidth;
     const description = projectInfo.description || '';
     const wrappedDescription = wrapText(description, descMaxWidth);
+
+    Logger.info(topBorder);
+    bannerArt.forEach(line => Logger.info(line));
 
     // Log project information with consistent widths
     Logger.info(topBorder);
