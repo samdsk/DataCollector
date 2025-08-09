@@ -15,72 +15,9 @@ class AdzunaRequestSender {
         this.apiKey = apiKey;
     }
 
-    buildUrl(jobType, requestedPage, options = {}) {
-        const {
-            country = "gb",
-            location = "",
-            salaryMin = "",
-            salaryMax = "",
-            sortBy = "",
-            resultsPerPage = "",
-            distance = "",
-            company = ""
-        } = options;
-
-        // Base URL with country
-        let url = `${AdzunaRequestSender.API_URL}/${country}/search/1`;
-
-        // Build query parameters
-        const params = new URLSearchParams();
-
-        // Required parameters
-        params.append('app_id', AdzunaRequestSender.APP_ID);
-        params.append('app_key', AdzunaRequestSender.API_KEY);
-
-        // Page parameter
-        if (requestedPage) {
-            params.append('page', requestedPage);
-        }
-
-        // Job search parameters
-        if (jobType) {
-            params.append('what', jobType);
-        }
-
-        if (location) {
-            params.append('where', location);
-        }
-
-        if (salaryMin) {
-            params.append('salary_min', salaryMin);
-        }
-
-        if (salaryMax) {
-            params.append('salary_max', salaryMax);
-        }
-
-        if (sortBy) {
-            params.append('sort_by', sortBy);
-        }
-
-        if (resultsPerPage) {
-            params.append('results_per_page', resultsPerPage);
-        }
-
-        if (distance) {
-            params.append('distance', distance);
-        }
-
-        if (company) {
-            params.append('company', company);
-        }
-
-        return `${url}?${params.toString()}`;
-    }
-
     buildParams(jobType, requestedPage, options = {}) {
         const {
-            country = "gb",
+            country = "it",
             location = "",
             salaryMin = "",
             salaryMax = "",
@@ -92,8 +29,7 @@ class AdzunaRequestSender {
 
         const params = {
             app_id: AdzunaRequestSender.APP_ID,
-            app_key: AdzunaRequestSender.API_KEY,
-            country
+            app_key: AdzunaRequestSender.API_KEY
         };
 
         if (requestedPage) params.page = requestedPage;
@@ -106,30 +42,25 @@ class AdzunaRequestSender {
         if (distance) params.distance = distance;
         if (company) params.company = company;
 
-        return params;
+        return { params, country };
     }
 
-    buildRequestOptions(params) {
-        const { country, ...queryParams } = params;
-
-        return {
-            method: "GET",
-            url: `${AdzunaRequestSender.API_URL}/${country}/search/1`,
-            params: queryParams,
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-    }
-
-    async sendRequest(jobType, requestedPage = "", options = {}) {
-        const params = this.buildParams(jobType, requestedPage, options);
-        const requestOptions = this.buildRequestOptions(params);
+    async sendRequest(jobType, requestedPage = 1, options = {}) {
+        const { params, country } = this.buildParams(jobType, requestedPage, options);
+        const url = `${AdzunaRequestSender.API_URL}/${country}/search/${requestedPage}`;
 
         try {
-            Logger.debug(`${AdzunaRequestSender.DATA_PROVIDER}: Sending request with params: ${JSON.stringify(params)}`);
-            const response = await axios.request(requestOptions);
-            return this.formatResponse(response?.data, jobType, params.where, params.country);
+            Logger.debug(`${AdzunaRequestSender.DATA_PROVIDER}: Sending request to: ${url}`);
+            Logger.debug(`${AdzunaRequestSender.DATA_PROVIDER}: With params: ${JSON.stringify(params)}`);
+
+            const response = await axios.get(url, {
+                params: params,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            });
+
+            return this.formatResponse(response?.data, jobType, params.where, country);
         } catch (error) {
             console.log(error)
             Logger.error(`${AdzunaRequestSender.DATA_PROVIDER}: Receiving : ${JSON.stringify(error)}`);
@@ -143,8 +74,8 @@ class AdzunaRequestSender {
     formatResponse(data, jobType, location, country) {
         return {
             ...data,
-            location,
-            country,
+            location: process.env.API_LOCATION,
+            language: process.env.API_LANGUAGE,
             job_type: jobType,
             data_provider: AdzunaRequestSender.DATA_PROVIDER,
         };
