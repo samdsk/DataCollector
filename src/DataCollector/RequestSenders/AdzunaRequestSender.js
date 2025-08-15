@@ -20,11 +20,13 @@ class AdzunaRequestSender {
         const {
             country = getCountryCode(process.env.API_LANGUAGE),
             location = "",
+            results_per_page = 50,
         } = options;
 
         const params = {
             app_id: AdzunaRequestSender.APP_ID,
-            app_key: this.API_KEY
+            app_key: this.API_KEY,
+            results_per_page
         };
 
         if (jobType) params.what = jobType;
