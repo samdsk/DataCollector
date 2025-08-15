@@ -105,16 +105,6 @@ describe("AdzunaCollector Unit Tests:", () => {
                 location: adzuna_response_example.location,
                 language: adzuna_response_example.language
             });
-
-            expect(ResultLogger.logResultsToJSONFile).toHaveBeenCalledWith(
-                `results_${jobType}`,
-                mockDate,
-                expect.objectContaining({
-                    job_type: jobType,
-                    searchDate: mockDate,
-                    jobs: adzuna_response_example.results
-                })
-            );
         });
 
         it("should collect jobs from multiple pages", async () => {
@@ -263,38 +253,6 @@ describe("AdzunaCollector Unit Tests:", () => {
 
             expect(mockJobPostHandler.insertList).toHaveBeenCalledWith(jobs, jobType, language);
             expect(result).toBe(expectedResult);
-        });
-    });
-
-    describe("logging methods", () => {
-        it("should log results to JSON file", async () => {
-            const results = {
-                job_type: "Software Engineer",
-                searchDate: mockDate,
-                jobs: adzuna_response_example.results
-            };
-
-            await collector.logResults(results);
-
-            expect(ResultLogger.logResultsToJSONFile).toHaveBeenCalledWith(
-                `results_${results.job_type}`,
-                results.searchDate,
-                results
-            );
-        });
-
-        it("should log full response to JSON file", async () => {
-            const jobType = "Software Engineer";
-            const date = mockDate;
-            const response = [adzuna_response_example];
-
-            await collector.logFullResponse(jobType, date, response);
-
-            expect(ResultLogger.logResultsToJSONFile).toHaveBeenCalledWith(
-                `full_response_${jobType}`,
-                date,
-                response
-            );
         });
     });
 });
