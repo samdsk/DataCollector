@@ -7,7 +7,7 @@ class AdzunaCollectionError extends Error {
         this.status = options.status || options.originalError?.response?.status;
         this.jobType = options.jobType;
         this.requestedPage = options.requestedPage;
-        this.receivedItems = options.receivedItems || 0;
+        this.availableItems = options.availableItems || 0;
 
         this.originalError = options.originalError;
 

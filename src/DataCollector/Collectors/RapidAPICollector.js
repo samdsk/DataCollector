@@ -91,7 +91,7 @@ class Collector {
 
             } while (jobCount >= 10 && requestCount < LIMIT);
         } catch (error) {
-            error.receivedItems = jobCount;
+            error.availableItems = jobCount;
             throw error
         } finally {
             await this.logResults(searchResults);

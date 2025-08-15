@@ -125,7 +125,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                     response: {status: 500},
                     jobType: jobTypesList[0],
                     requestedPage: "page1",
-                    receivedItems: 15
+                    availableItems: 15
                 })
                 .mockResolvedValueOnce({data: response_example});
 

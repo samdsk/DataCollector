@@ -71,7 +71,7 @@ class AdzunaAutomator {
 
     updatePaginationState(error, jobTypesList, options) {
         if (jobTypesList[0] === error.jobType) {
-            options.requestedPage = error?.receivedItems < 1 ? 1 : error.requestedPage;
+            options.requestedPage = error?.availableItems < 1 ? 1 : error.requestedPage;
         } else {
             options.requestedPage = 1;
         }

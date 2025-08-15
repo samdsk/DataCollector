@@ -187,7 +187,7 @@ describe("AdzunaCollector Unit Tests:", () => {
         it("should handle errors and still log results", async () => {
             const jobType = "Software Engineer";
             const error = new Error("API request failed");
-            error.receivedItems = undefined;
+            error.availableItems = undefined;
 
             mockRequestSender.sendRequest.mockRejectedValueOnce(error);
 
@@ -195,7 +195,7 @@ describe("AdzunaCollector Unit Tests:", () => {
                 await collector.collect(jobType);
             } catch (thrownError) {
                 expect(thrownError).toBe(error);
-                expect(thrownError.receivedItems).toBe(10); // jobCount default value
+                expect(thrownError.availableItems).toBe(0); // jobCount default value
             }
 
             expect(ResultLogger.logResultsToJSONFile).toHaveBeenCalled();

@@ -54,10 +54,11 @@ class Collector {
         // collecting actual response data for debug purposes
         let actualResponseData = [];
 
-        let jobCount = 10;
+        let jobCount = 0;
         let requestedPage = RequestOptions?.requestedPage || 1;
         let insertedCount = 0;
         let requestCount = 0;
+        let availableJobPosts = 0;
 
         try { // use REQUEST_LIMIT env variable to vary the limit
             do {
@@ -82,11 +83,12 @@ class Collector {
                 if (!searchResults?.language) searchResults.language = data.language;
 
                 jobCount = parseInt(data?.results?.length || 0, 10);
+                availableJobPosts = parseInt(data?.count || 0, 10);
                 requestCount++;
                 requestedPage++;
-            } while (jobCount > 0 && requestCount < LIMIT);
+            } while (availableJobPosts > 0 && requestCount < LIMIT);
         } catch (error) {
-            error.receivedItems = jobCount;
+            error.availableItems = availableJobPosts;
             throw error
         } finally {
             await this.logResults(searchResults);

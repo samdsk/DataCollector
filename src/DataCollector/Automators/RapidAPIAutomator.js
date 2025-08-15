@@ -71,7 +71,7 @@ class RapidAPIAutomator {
 
     updatePaginationState(error, jobTypesList, options) {
         if (jobTypesList[0] === error.jobType) {
-            options.requestedPage = error?.receivedItems < 10 ? "" : error.requestedPage;
+            options.requestedPage = error?.availableItems < 10 ? "" : error.requestedPage;
         } else {
             options.requestedPage = "";
         }
