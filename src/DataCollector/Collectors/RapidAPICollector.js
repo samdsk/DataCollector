@@ -1,5 +1,6 @@
 const ResultLogger = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
+const {DATA_PROVIDER} = require("../RequestSenders/AdzunaRequestSender");
 require("dotenv").config();
 
 const DEFAULT_LIMIT = 3;
@@ -21,7 +22,7 @@ class Collector {
     async logResults(results) {
         // logging search results
         await ResultLogger.logResultsToJSONFile(
-            `results_${results.job_type}`,
+            `results_${DATA_PROVIDER}_${results.job_type}`,
             results.searchDate,
             results
         );
@@ -29,7 +30,7 @@ class Collector {
 
     async logFullResponse(job_type, date, response) {
         await ResultLogger.logResultsToJSONFile(
-            `full_response_${job_type}`,
+            `full_response_${DATA_PROVIDER}_${job_type}`,
             date,
             response
         );
@@ -99,7 +100,7 @@ class Collector {
                 await this.logFullResponse(JOB_TYPE, searchDate, actualResponseData);
 
             Logger.info(
-                `Collected: ${
+                `${DATA_PROVIDER} - Collected: ${
                     searchResults.jobs.length
                 } and inserted ${insertedCount} duplicates:${
                     searchResults.jobs.length - insertedCount
