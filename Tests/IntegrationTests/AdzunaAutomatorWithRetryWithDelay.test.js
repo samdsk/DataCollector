@@ -132,7 +132,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             await automator.automate(jobTypesList, optionsWithPage);
 
             // The requestedPage should be preserved during retries
-            expect(optionsWithPage.requestedPage).toBe("");
+            expect(optionsWithPage.requestedPage).toBe(1);
         });
 
         it("should handle multiple consecutive errors before success", async () => {

@@ -54,11 +54,12 @@ class Collector {
         // collecting actual response data for debug purposes
         let actualResponseData = [];
 
-        let jobCount = 0;
+        let receivedJobsCount = 0;
         let requestedPage = RequestOptions?.requestedPage || 1;
         let insertedCount = 0;
         let requestCount = 0;
-        let availableJobPosts = 0;
+        let totalAvailableJobs = 0;
+        let lastPageReceivedJobs = 0;
 
         try { // use REQUEST_LIMIT env variable to vary the limit
             do {
@@ -67,6 +68,13 @@ class Collector {
                     requestedPage,
                     RequestOptions
                 );
+
+                // Track received jobs from this page
+                lastPageReceivedJobs = parseInt(data?.results?.length || 0, 10);
+                receivedJobsCount += lastPageReceivedJobs;
+
+                // Total available jobs from API (this doesn't decrease)
+                totalAvailableJobs = parseInt(data?.count || 0, 10);
 
                 insertedCount += await this.insertJobs(
                     data.results,
@@ -82,13 +90,18 @@ class Collector {
                 if (!searchResults?.location) searchResults.location = data.location;
                 if (!searchResults?.language) searchResults.language = data.language;
 
-                jobCount = parseInt(data?.results?.length || 0, 10);
-                availableJobPosts = parseInt(data?.count || 0, 10);
                 requestCount++;
                 requestedPage++;
-            } while (availableJobPosts > 0 && requestCount < LIMIT);
+            } while (
+                lastPageReceivedJobs > 0 &&
+                requestCount < LIMIT &&
+                receivedJobsCount < totalAvailableJobs
+            );
         } catch (error) {
-            error.availableItems = availableJobPosts;
+            error.availableItems = totalAvailableJobs;
+            error.receivedItems = receivedJobsCount;
+            error.currentPage = requestedPage;
+            error.lastPageReceivedJobs = lastPageReceivedJobs;
             throw error
         } finally {
             await this.logResults(searchResults);
@@ -114,6 +127,9 @@ class Collector {
             inserted: insertedCount,
             location: searchResults.location,
             language: searchResults.language,
+            totalAvailable: totalAvailableJobs,
+            receivedTotal: receivedJobsCount,
+            pagesProcessed: requestCount
         };
     }
 

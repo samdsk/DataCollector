@@ -2,7 +2,6 @@ const Logger = require("../Loggers/CollectorLogger");
 const MaxRetriesReachedError = require("../Errors/MaxRetriesReachedError");
 require("dotenv").config();
 
-
 class AdzunaAutomator {
     static KEY_DELETE_ERROR_CODES = [429, 403, 401];
 
@@ -48,7 +47,8 @@ class AdzunaAutomator {
                     const response = await this.collector.collect(jobType, options);
                     Logger.debug(JSON.stringify(response));
                     results.push(response);
-                    options.requestedPage = "";
+                    // Reset pagination for next job type
+                    options.requestedPage = 1;
                 },
                 context
             );
@@ -64,23 +64,63 @@ class AdzunaAutomator {
             this.keys.delete(key);
         }
 
-        Logger.info(`AdzunaAutomator: Last job type ${error.jobType}, last page ${error.requestedPage}`);
+        Logger.info(`AdzunaAutomator: Last job type ${error.jobType}, last page ${error.currentPage || error.requestedPage}, received ${error.receivedItems || 0} items`);
 
         this.updatePaginationState(error, jobTypesList, options);
     }
 
     updatePaginationState(error, jobTypesList, options) {
-        if (jobTypesList[0] === error.jobType) {
-            options.requestedPage = error?.availableItems < 1 ? 1 : error.requestedPage;
+        const currentJobType = jobTypesList[0];
+
+        if (currentJobType === error.jobType) {
+            // We're dealing with the same job type that errored
+            Logger.debug(`AdzunaAutomator: Handling error for current job type: ${error.jobType}`);
+
+            // Determine the page to retry based on error context
+            const pageToRetry = this.determineRetryPage(error);
+            options.requestedPage = pageToRetry;
+
+            Logger.debug(`AdzunaAutomator: Will retry from page ${pageToRetry}`);
         } else {
+            // Different job type, start fresh
+            Logger.debug(`AdzunaAutomator: Switching to different job type, starting from page 1`);
             options.requestedPage = 1;
         }
 
+        // Remove completed job types from the list
         const indexOfJob = jobTypesList.indexOf(error.jobType);
         if (indexOfJob > 0) {
             Logger.debug(`AdzunaAutomator: Slicing the job types list from index ${indexOfJob}`);
             jobTypesList.splice(0, indexOfJob);
         }
+    }
+
+    /**
+     * Determines which page to retry based on the error context
+     * @param {Object} error - The error object with pagination context
+     * @returns {number} - The page number to retry
+     */
+    determineRetryPage(error) {
+        // If no items were received at all, start from page 1
+        if (error.receivedItems === 0) {
+            Logger.debug(`AdzunaAutomator: No items received, retrying from page 1`);
+            return 1;
+        }
+
+        if (error.currentPage) {
+            if (error.lastPageReceivedJobs > 0) {
+                Logger.debug(`AdzunaAutomator: Last page had ${error.lastPageReceivedJobs} jobs, retrying page ${error.currentPage}`);
+                return error.currentPage;
+            } else {
+                const previousPage = Math.max(1, error.currentPage - 1);
+                Logger.debug(`AdzunaAutomator: Last page was empty, retrying from previous page ${previousPage}`);
+                return previousPage;
+            }
+        }
+
+        // Final fallback
+        Logger.debug(`AdzunaAutomator: Using fallback, retrying from page 1`);
+        return 1;
     }
 }
 

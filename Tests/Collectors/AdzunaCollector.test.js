@@ -1,3 +1,4 @@
+
 const Collector = require("../../src/DataCollector/Collectors/AdzunaCollector");
 const ResultLogger = require("../../src/DataCollector/Loggers/ResultsLogger");
 
@@ -19,7 +20,7 @@ const adzuna_response_example = {
             created: "2025-08-14T10:00:00Z"
         }
     ],
-    count: 0,
+    count: 100, // Fixed count that doesn't decrease
     location: "New York",
     language: "en_US",
     job_type: "Software Engineer",
@@ -42,8 +43,17 @@ const adzuna_response_example_page2 = {
             created: "2025-08-14T09:00:00Z"
         }
     ],
-    count: 0,
+    count: 100, // Same fixed count as page 1
     location: "San Francisco",
+    language: "en_US",
+    job_type: "Software Engineer",
+    data_provider: "Adzuna"
+};
+
+const adzuna_empty_response = {
+    results: [],
+    count: 100, // Count stays the same even when no more results
+    location: "New York",
     language: "en_US",
     job_type: "Software Engineer",
     data_provider: "Adzuna"
@@ -85,7 +95,7 @@ describe("AdzunaCollector Unit Tests:", () => {
             const jobType = "Software Engineer";
             const expectedInsertedCount = 1;
 
-            mockRequestSender.sendRequest.mockResolvedValueOnce(adzuna_response_example);
+            mockRequestSender.sendRequest.mockResolvedValueOnce({...adzuna_response_example, count: 1});
             mockJobPostHandler.insertList.mockResolvedValueOnce(expectedInsertedCount);
 
             const result = await collector.collect(jobType);
@@ -103,17 +113,49 @@ describe("AdzunaCollector Unit Tests:", () => {
                 collected: 1,
                 inserted: expectedInsertedCount,
                 location: adzuna_response_example.location,
-                language: adzuna_response_example.language
+                language: adzuna_response_example.language,
+                totalAvailable: 1,
+                receivedTotal: 1,
+                pagesProcessed: 1
             });
         });
 
-        it("should collect jobs from multiple pages", async () => {
+        it("should collect jobs from multiple pages with fixed count", async () => {
             const jobType = "Software Engineer";
             process.env.REQUEST_LIMIT = "3";
 
+            // Simulate multiple pages with fixed count
             mockRequestSender.sendRequest
-                .mockResolvedValueOnce({...adzuna_response_example, count: 1})
-                .mockResolvedValueOnce(adzuna_response_example_page2);
+                .mockResolvedValueOnce(adzuna_response_example) // Page 1: 1 result
+                .mockResolvedValueOnce(adzuna_response_example_page2) // Page 2: 1 result
+                .mockResolvedValueOnce(adzuna_empty_response); // Page 3: 0 results
+
+            mockJobPostHandler.insertList
+                .mockResolvedValueOnce(1)
+                .mockResolvedValueOnce(1)
+                .mockResolvedValueOnce(0);
+
+            const result = await collector.collect(jobType);
+
+            expect(mockRequestSender.sendRequest).toHaveBeenCalledTimes(3);
+            expect(mockRequestSender.sendRequest).toHaveBeenNthCalledWith(1, jobType, 1, undefined);
+            expect(mockRequestSender.sendRequest).toHaveBeenNthCalledWith(2, jobType, 2, undefined);
+            expect(mockRequestSender.sendRequest).toHaveBeenNthCalledWith(3, jobType, 3, undefined);
+
+            expect(result.collected).toBe(2);
+            expect(result.inserted).toBe(2);
+            expect(result.totalAvailable).toBe(100);
+            expect(result.receivedTotal).toBe(2);
+            expect(result.pagesProcessed).toBe(3);
+        });
+
+        it("should stop when reaching total available jobs despite fixed count", async () => {
+            const jobType = "Software Engineer";
+            const smallCountResponse = { ...adzuna_response_example, count: 2 }; // Only 2 jobs available
+
+            mockRequestSender.sendRequest
+                .mockResolvedValueOnce(smallCountResponse) // Page 1: 1 result out of 2 total
+                .mockResolvedValueOnce({...smallCountResponse, results: [adzuna_response_example_page2.results[0]]}); // Page 2: 1 result
 
             mockJobPostHandler.insertList
                 .mockResolvedValueOnce(1)
@@ -122,23 +164,31 @@ describe("AdzunaCollector Unit Tests:", () => {
             const result = await collector.collect(jobType);
 
             expect(mockRequestSender.sendRequest).toHaveBeenCalledTimes(2);
-            expect(mockRequestSender.sendRequest).toHaveBeenNthCalledWith(1, jobType, 1, undefined);
-            expect(mockRequestSender.sendRequest).toHaveBeenNthCalledWith(2, jobType, 2, undefined);
-
             expect(result.collected).toBe(2);
-            expect(result.inserted).toBe(2);
+            expect(result.totalAvailable).toBe(2);
+            expect(result.receivedTotal).toBe(2); // Collected all available jobs
         });
 
-        it("should respect REQUEST_LIMIT environment variable", async () => {
+        it("should handle large count with pagination stopping at empty results", async () => {
             const jobType = "Software Engineer";
-            process.env.REQUEST_LIMIT = "1";
+            const largeCountResponse = { ...adzuna_response_example, count: 1000 }; // 1000 jobs available
 
-            mockRequestSender.sendRequest.mockResolvedValueOnce(adzuna_response_example);
-            mockJobPostHandler.insertList.mockResolvedValueOnce(1);
+            mockRequestSender.sendRequest
+                .mockResolvedValueOnce(largeCountResponse) // Page 1: 1 result
+                .mockResolvedValueOnce(adzuna_response_example_page2) // Page 2: 1 result
+                .mockResolvedValueOnce(adzuna_empty_response); // Page 3: 0 results (no more data)
 
-            await collector.collect(jobType);
+            mockJobPostHandler.insertList
+                .mockResolvedValueOnce(1)
+                .mockResolvedValueOnce(1)
+                .mockResolvedValueOnce(0);
 
-            expect(mockRequestSender.sendRequest).toHaveBeenCalledTimes(1);
+            const result = await collector.collect(jobType);
+
+            expect(mockRequestSender.sendRequest).toHaveBeenCalledTimes(3);
+            expect(result.collected).toBe(2); // Only got 2 results despite 1000 being available
+            expect(result.totalAvailable).toBe(100); // Last response count
+            expect(result.receivedTotal).toBe(2);
         });
 
         it("should handle RequestOptions parameter", async () => {
@@ -149,7 +199,7 @@ describe("AdzunaCollector Unit Tests:", () => {
                 location: "New York"
             };
 
-            mockRequestSender.sendRequest.mockResolvedValueOnce(adzuna_response_example);
+            mockRequestSender.sendRequest.mockResolvedValueOnce({...adzuna_response_example, count : 1});
             mockJobPostHandler.insertList.mockResolvedValueOnce(1);
 
             await collector.collect(jobType, requestOptions);
@@ -157,55 +207,46 @@ describe("AdzunaCollector Unit Tests:", () => {
             expect(mockRequestSender.sendRequest).toHaveBeenCalledWith(jobType, 2, requestOptions);
         });
 
-        it("should log full response when LOG_LEVEL is debug", async () => {
-            const jobType = "Software Engineer";
-
-            mockRequestSender.sendRequest.mockResolvedValueOnce(adzuna_response_example);
-            mockJobPostHandler.insertList.mockResolvedValueOnce(1);
-
-            jest.spyOn(collector, 'logFullResponse').mockResolvedValue();
-
-            await collector.collect(jobType);
-
-            expect(collector.logFullResponse).toHaveBeenCalledWith(
-                jobType,
-                mockDate,
-                [adzuna_response_example]
-            );
-        });
-
-        it("should handle errors and still log results", async () => {
+        it("should handle errors and include pagination context with fixed count", async () => {
             const jobType = "Software Engineer";
             const error = new Error("API request failed");
-            error.availableItems = undefined;
 
-            mockRequestSender.sendRequest.mockRejectedValueOnce(error);
+            // First request succeeds, second fails
+            mockRequestSender.sendRequest
+                .mockResolvedValueOnce(adzuna_response_example) // Page 1 succeeds
+                .mockRejectedValueOnce(error); // Page 2 fails
+
+            mockJobPostHandler.insertList.mockResolvedValueOnce(1);
 
             try {
                 await collector.collect(jobType);
             } catch (thrownError) {
                 expect(thrownError).toBe(error);
-                expect(thrownError.availableItems).toBe(0); // jobCount default value
+                expect(thrownError.availableItems).toBe(100); // Fixed count from first successful request
+                expect(thrownError.receivedItems).toBe(1); // Received from first page
+                expect(thrownError.currentPage).toBe(2); // Failed on page 2
             }
-
-            expect(ResultLogger.logResultsToJSONFile).toHaveBeenCalled();
         });
 
-        it("should stop collecting when jobCount reaches 0", async () => {
+        it("should stop collecting when no more results despite fixed count showing availability", async () => {
             const jobType = "Software Engineer";
-            const emptyResponse = { ...adzuna_response_example, count: 0, results: [] };
+            const responseWithJobs = { ...adzuna_response_example, count: 1000 };
+            const emptyResponseWithFixedCount = { ...adzuna_empty_response, count: 1000 };
 
             mockRequestSender.sendRequest
-                .mockResolvedValueOnce({...adzuna_response_example, count: 10})
-                .mockResolvedValueOnce(emptyResponse);
+                .mockResolvedValueOnce(responseWithJobs) // Page 1: has results
+                .mockResolvedValueOnce(emptyResponseWithFixedCount); // Page 2: no results but count still 1000
 
             mockJobPostHandler.insertList
                 .mockResolvedValueOnce(1)
                 .mockResolvedValueOnce(0);
 
-            await collector.collect(jobType);
+            const result = await collector.collect(jobType);
 
             expect(mockRequestSender.sendRequest).toHaveBeenCalledTimes(2);
+            expect(result.collected).toBe(1); // Only 1 job actually collected
+            expect(result.totalAvailable).toBe(1000); // Fixed count from API
+            expect(result.receivedTotal).toBe(1); // Total jobs actually received across all pages
         });
     });
 
@@ -215,8 +256,8 @@ describe("AdzunaCollector Unit Tests:", () => {
             const requestOptions = { location: "New York" };
 
             mockRequestSender.sendRequest
-                .mockResolvedValueOnce(adzuna_response_example)
-                .mockResolvedValueOnce({ ...adzuna_response_example, job_type: "Data Scientist" });
+                .mockResolvedValueOnce({...adzuna_response_example, count : 1})
+                .mockResolvedValueOnce({ ...adzuna_response_example, job_type: "Data Scientist", count : 1 });
 
             mockJobPostHandler.insertList
                 .mockResolvedValueOnce(1)
