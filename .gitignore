@@ -200,3 +200,5 @@ deploy.zip
 download_logs.sh
 /backups/
 /results/
+
+*/keylist.json
