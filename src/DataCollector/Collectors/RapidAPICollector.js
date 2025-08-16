@@ -1,6 +1,6 @@
 const ResultLogger = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
-const {DATA_PROVIDER} = require("../RequestSenders/AdzunaRequestSender");
+const {DATA_PROVIDER} = require("../RequestSenders/RapidAPIRequestSender_v02");
 require("dotenv").config();
 
 const DEFAULT_LIMIT = 3;
