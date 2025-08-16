@@ -89,6 +89,8 @@ class Collector {
                 else
                     requestedPage = data.nextPage;
 
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
             } while (jobCount >= 10 && requestCount < LIMIT);
         } catch (error) {
             error.availableItems = jobCount;
