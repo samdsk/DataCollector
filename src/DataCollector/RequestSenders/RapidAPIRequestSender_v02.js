@@ -51,6 +51,7 @@ class RapidAPIRequestSender_v02 {
             method: "GET",
             url: RapidAPIRequestSender_v02.API_URL,
             params,
+            timeout: 45000,
             headers: {
                 "X-RapidAPI-Key": this.apiKey,
                 "X-RapidAPI-Host": RapidAPIRequestSender_v02.API_HOST,

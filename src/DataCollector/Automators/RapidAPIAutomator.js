@@ -52,6 +52,10 @@ class RapidAPIAutomator {
                 },
                 context
             );
+
+            if (this.config?.delayBetweenRequests) {
+                await new Promise(resolve => setTimeout(resolve, this.config.delayBetweenRequests));
+            }
         }
 
         Logger.debug("RapidAPIAutomator: Collected all job types, exiting...");
