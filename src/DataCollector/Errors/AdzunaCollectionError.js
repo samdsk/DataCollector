@@ -1,8 +1,7 @@
-class RapidAPICollectionError extends Error {
+class AdzunaCollectionError extends Error {
     constructor(message, options = {}) {
-        const errorMessage = message || options.originalError?.message || "Unknown RapidAPI collection error";
+        const errorMessage = message || options.originalError?.message || "Unknown Adzuna collection error";
         super(errorMessage);
-
 
         this.name = this.constructor.name;
         this.status = options.status || options.originalError?.response?.status;
@@ -16,4 +15,4 @@ class RapidAPICollectionError extends Error {
     }
 }
 
-module.exports = RapidAPICollectionError;
+module.exports = AdzunaCollectionError;

@@ -6,12 +6,16 @@ const Logger = require("../DataCollector/Loggers/CollectorLogger")
 const ProcessRegistry = require("../DataCollector/CollectorProcessRegistry");
 const SchedulerManager = require("../DataCollector/Schedulers/SchedulerManager");
 const RapidAPIAutomatorFactory = require("../DataCollector/Factories/RapidAPIAutomatorFactory");
-const RapidAPICollectionProcess = require("../DataCollector/CollectorProcesses/RapidAPICollectorProcess");
+const RapidAPICollectorProcess = require("../DataCollector/CollectorProcesses/RapidAPICollectorProcess");
 const RapidAPIConfigLoader = require("../DataCollector/ConfigLoaders/RapidAPIConfigLoader");
 const RapidAPIResultsProcessor = require("../DataCollector/ResultProcessors/RapidAPIResultProcessor");
 const {Scheduler} = require("../DataCollector/Schedulers/Scheduler");
 const CollectorEventEmitter = require("../DataCollector/Schedulers/CollectorEventEmitter");
 const DailyRunStrategy = require("../DataCollector/Schedulers/RunStrategy/DailyRunStrategy");
+const AdzunaCollectorProcess = require("../DataCollector/CollectorProcesses/AdzunaCollectorProcess");
+const AdzunaAutomatorFactory = require("../DataCollector/Factories/AdzunaAutomatorFactory");
+const AdzunaResultsProcessor = require("../DataCollector/ResultProcessors/AdzunaResultProcessor");
+const AdzunaConfigLoader = require("../DataCollector/ConfigLoaders/AdzunaConfigLoader");
 
 class CollectorApp {
     constructor() {
@@ -42,13 +46,22 @@ class CollectorApp {
 
     registerProcesses() {
         // Register RapidAPI collection process
-        const rapidAPIProcess = new RapidAPICollectionProcess(
+        const rapidAPIProcess = new RapidAPICollectorProcess(
             RapidAPIAutomatorFactory,
             RapidAPIResultsProcessor,
             RapidAPIConfigLoader,
             this.schedulerManager
         );
+
+        const adzunaProcess = new AdzunaCollectorProcess(
+            AdzunaAutomatorFactory,
+            AdzunaResultsProcessor,
+            AdzunaConfigLoader,
+            this.schedulerManager
+        );
+
         this.processRegistry.register(rapidAPIProcess);
+        // this.processRegistry.register(adzunaProcess);
     }
 
     async shutdown() {

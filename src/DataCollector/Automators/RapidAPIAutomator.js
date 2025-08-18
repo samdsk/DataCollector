@@ -52,6 +52,10 @@ class RapidAPIAutomator {
                 },
                 context
             );
+
+            if (this.config?.delayBetweenRequests) {
+                await new Promise(resolve => setTimeout(resolve, this.config.delayBetweenRequests));
+            }
         }
 
         Logger.debug("RapidAPIAutomator: Collected all job types, exiting...");
@@ -71,7 +75,7 @@ class RapidAPIAutomator {
 
     updatePaginationState(error, jobTypesList, options) {
         if (jobTypesList[0] === error.jobType) {
-            options.requestedPage = error?.receivedItems < 10 ? "" : error.requestedPage;
+            options.requestedPage = error?.availableItems < 10 ? "" : error.requestedPage;
         } else {
             options.requestedPage = "";
         }

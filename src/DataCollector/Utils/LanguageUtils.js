@@ -25,9 +25,18 @@ const getLanguageNameByTag = (tag) => {
     return `${res.name}`;
 };
 
+const getCountryCode = (tag) => {
+    const normalizedTag = tag.replace("_", "-");
+    const res = locales.getByTag(normalizedTag);
+    return res ? res["iso639-1"] : null;
+};
+
+
+
 module.exports = {
     validate,
     convertRapidAPILanguageTagToICULocale,
     convertICULocaleLanguageTagToRapidAPI,
     getLanguageNameByTag,
+    getCountryCode
 };

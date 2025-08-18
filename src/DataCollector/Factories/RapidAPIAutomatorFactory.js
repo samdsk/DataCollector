@@ -1,6 +1,6 @@
 const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
 const JobPostHandler = require("../Handlers/JobPostHandler");
-const RetryWithDelay = require("../ErrorHandlers/RetryWithDelay");
+const RetryWithDelay = require("../ErrorHandlingStrategies/RetryWithDelay");
 const RapidAPICollector = require("../Collectors/RapidAPICollector");
 const RapidAPIAutomator = require("../Automators/RapidAPIAutomator");
 const RapidAPIConverter = require("../Converters/RapidAPIConverter");
@@ -25,7 +25,8 @@ class RapidAPIAutomatorFactory {
             retryHandler,
             {
                 API_URL: process.env.API_URL,
-                API_HOST: process.env.API_HOST
+                API_HOST: process.env.API_HOST,
+                delayBetweenRequests: parseInt(process.env.DELAY_BETWEEN_REQUESTS, 10) || 1000,
             }
         );
     }

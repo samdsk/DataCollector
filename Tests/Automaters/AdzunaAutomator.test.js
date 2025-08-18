@@ -1,10 +1,10 @@
-const Automate = require("../../src/DataCollector/Automators/RapidAPIAutomator");
-const Collector = require("../../src/DataCollector/Collectors/RapidAPICollector");
-const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
+const Automate = require("../../src/DataCollector/Automators/AdzunaAutomator");
+const Collector = require("../../src/DataCollector/Collectors/AdzunaCollector");
+const AdzunaRequestSender = require("../../src/DataCollector/RequestSenders/AdzunaRequestSender");
 const RetryWithDelay = require("../../src/DataCollector/ErrorHandlingStrategies/RetryWithDelay");
 
-jest.mock("../../src/DataCollector/Collectors/RapidAPICollector");
-jest.mock("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
+jest.mock("../../src/DataCollector/Collectors/AdzunaCollector");
+jest.mock("../../src/DataCollector/RequestSenders/AdzunaRequestSender");
 
 describe("Integration tests for Automate.collect()", () => {
     let automate;
@@ -26,7 +26,7 @@ describe("Integration tests for Automate.collect()", () => {
         automate = new Automate(new Set(initialKeys), senderMock, collectorMock, new RetryWithDelay(5, [429, 401, 403]), {});
 
         Collector.mockImplementation(() => collectorMock);
-        RapidAPIRequestSender_v02.mockImplementation(() => senderMock);
+        AdzunaRequestSender.mockImplementation(() => senderMock);
     });
 
     afterEach(() => {
@@ -44,7 +44,7 @@ describe("Integration tests for Automate.collect()", () => {
         const results = await automate.automate(jobTypesList, options);
 
         expect(results).toEqual([{job_type: "job1", collected: 5}, {job_type: "job2", collected: 6},]);
-        expect(options.requestedPage).toBe(""); // should be reset after each job type
+        expect(options.requestedPage).toBe(1); // should be reset after each job type
     });
 
     test("should preserve requestedPage if error occurs and the error job type is the next one", async () => {
@@ -60,7 +60,7 @@ describe("Integration tests for Automate.collect()", () => {
         const results = await automate.automate(jobTypesList, options);
 
         expect(results).toEqual([{job_type: "job1", collected: 9}, {job_type: "job2", collected: 8},]);
-        expect(options.requestedPage).toBe("");
+        expect(options.requestedPage).toBe(1);
     });
 
     test("should reset requestedPage and slice jobTypesList if error job type is not the next one", async () => {
@@ -79,7 +79,7 @@ describe("Integration tests for Automate.collect()", () => {
             job_type: "job3",
             collected: 9
         },]);
-        expect(options.requestedPage).toBe("");
+        expect(options.requestedPage).toBe(1);
     });
 
     test("should remove an invalid key and retry with the next key", async () => {
@@ -137,7 +137,7 @@ describe("Integration tests for Automate.collect()", () => {
         const results = await automate.automate(jobTypesList, options);
 
         expect(results).toEqual([{job_type: "job1", collected: 10}, {job_type: "job2", collected: 8},]);
-        expect(options.requestedPage).toBe("");
+        expect(options.requestedPage).toBe(1);
     });
 
     test("should try multiple keys until success for the same job type", async () => {
