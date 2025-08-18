@@ -1,5 +1,6 @@
 const {logResultsToJSONFile} = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
+const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
 
 class RapidAPIResultsProcessor {
     static async process(results) {
@@ -9,9 +10,9 @@ class RapidAPIResultsProcessor {
     }
 
     static generateSummaryReport(results) {
-        console.log('\n' + '='.repeat(90));
-        console.log('DATA COLLECTION SUMMARY REPORT');
-        console.log('='.repeat(90));
+        Logger.info('\n' + '='.repeat(90));
+        Logger.info(`DATA COLLECTION SUMMARY REPORT - ${RapidAPIRequestSender_v02.DATA_PROVIDER}`);
+        Logger.info('='.repeat(90));
 
         // Extract metadata
         const timestamp = new Date().toISOString();
@@ -25,26 +26,26 @@ class RapidAPIResultsProcessor {
         const insertionRate = totalCollected > 0 ? (totalInserted / totalCollected) : 0;
 
         // Header Information
-        console.log(`Report Generated: ${timestamp}`);
-        console.log(`Geographic Scope: ${location}`);
-        console.log(`Language Locale: ${language}`);
-        console.log(`Categories Analyzed: ${totalCategories}`);
-        console.log('');
+        Logger.info(`Report Generated: ${timestamp}`);
+        Logger.info(`Geographic Scope: ${location}`);
+        Logger.info(`Language Locale: ${language}`);
+        Logger.info(`Categories Analyzed: ${totalCategories}`);
+        Logger.info('');
 
         // Executive Summary
-        console.log('EXECUTIVE SUMMARY');
-        console.log('-'.repeat(90));
-        console.log(`Total Records Collected: ${totalCollected.toLocaleString()}`);
-        console.log(`Total Records Processed: ${totalInserted.toLocaleString()}`);
-        console.log(`Processing Efficiency: ${(insertionRate * 100).toFixed(2)}%`);
-        console.log(`Data Quality Score: ${this.calculateDataQualityScore(results).toFixed(2)}/10.00`);
-        console.log('');
+        Logger.info('EXECUTIVE SUMMARY');
+        Logger.info('-'.repeat(90));
+        Logger.info(`Total Records Collected: ${totalCollected.toLocaleString()}`);
+        Logger.info(`Total Records Processed: ${totalInserted.toLocaleString()}`);
+        Logger.info(`Processing Efficiency: ${(insertionRate * 100).toFixed(2)}%`);
+        Logger.info(`Data Quality Score: ${this.calculateDataQualityScore(results).toFixed(2)}/10.00`);
+        Logger.info('');
 
         // Detailed Analysis
-        console.log('DETAILED CATEGORY ANALYSIS');
-        console.log('-'.repeat(90));
-        console.log('Category          | Collected | Processed | Efficiency | Status');
-        console.log('-'.repeat(90));
+        Logger.info('DETAILED CATEGORY ANALYSIS');
+        Logger.info('-'.repeat(90));
+        Logger.info('Category          | Collected | Processed | Efficiency | Status');
+        Logger.info('-'.repeat(90));
 
         results.forEach(item => {
             const category = item.job_type.padEnd(16);
@@ -60,10 +61,10 @@ class RapidAPIResultsProcessor {
             else if (item.inserted > 0 && item.inserted < item.collected) status = 'Partial';
             else if (item.inserted === item.collected && item.collected > 0) status = 'Complete';
 
-            console.log(`${category} | ${collected} | ${processed} | ${efficiencyFormatted} | ${status}`);
+            Logger.info(`${category} | ${collected} | ${processed} | ${efficiencyFormatted} | ${status}`);
         });
 
-        console.log('-'.repeat(90));
+        Logger.info('-'.repeat(90));
     }
 
     static calculateDataQualityScore(results) {
