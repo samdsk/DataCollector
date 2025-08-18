@@ -25,7 +25,8 @@ class RapidAPIAutomatorFactory {
             retryHandler,
             {
                 API_URL: process.env.API_URL,
-                API_HOST: process.env.API_HOST
+                API_HOST: process.env.API_HOST,
+                delayBetweenRequests: parseInt(process.env.DELAY_BETWEEN_REQUESTS, 10) || 1000,
             }
         );
     }

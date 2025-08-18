@@ -1,39 +1,43 @@
 const mongoose = require("mongoose");
-const RapidAPICollector = require("../../src/DataCollector/Collectors/RapidAPICollector");
+const AdzunaCollector = require("../../src/DataCollector/Collectors/AdzunaCollector");
 const RetryWithDelay = require("../../src/DataCollector/ErrorHandlingStrategies/RetryWithDelay");
 const axios = require("axios");
 const DataProviderService = require("../../src/Services/DataProviderService");
-const RapidAPIRequestSender_v02 = require("../../src/DataCollector/RequestSenders/RapidAPIRequestSender_v02");
+const AdzunaRequestSender = require("../../src/DataCollector/RequestSenders/AdzunaRequestSender");
 const JobPostHandler = require("../../src/DataCollector/Handlers/JobPostHandler");
-const RapidAPIConverter = require("../../src/DataCollector/Converters/RapidAPIConverter");
+const AdzunaConverter = require("../../src/DataCollector/Converters/AdzunaConverter");
 const JobPostService = require("../../src/Services/JobPostService");
-const RapidAPIAutomator = require("../../src/DataCollector/Automators/RapidAPIAutomator");
+const AdzunaAutomator = require("../../src/DataCollector/Automators/AdzunaAutomator");
 
 jest.mock("axios");
 
 const response_example = {
-    jobs: [{
-        id: "UyxvLGYsdCx3LGEscixlLCAsRSxuLGcsaSxuLGUsZSxyLCwsICxKLHUsbixpLG8scixCLG8sbyx6LCA=",
-        title: "Software Engineer, Junior",
-        company: "Test Company",
-        description: "Test Description",
-        location: "Roma RM, Italia",
-        employmentType: "Full-time e Part-time",
-        datePosted: "2 giorni fa",
-        jobProviders: [{
-            jobProvider: "Test Provider",
-            url: "https://test.com"
-        }]
-    }],
-    language: "it_IT",
-    job_type: "Software Engineer",
-    data_provider: RapidAPIRequestSender_v02.DATA_PROVIDER,
-    index: 0,
-    jobCount: 1,
-    nextPage: "nextpage",
-    hasError: false,
-    errors: []
+    mean: 56641.73,
+    results: [
+        {
+            id: "5345357427",
+            title: "Software Engineer",
+            description: "Ciao Network!  Sono alla ricerca attiva di un SENIOR FULL STACK, freelance da inserire su un nostro cliente finale in ambito Healthcare in Italia. Lingua Parlata nel progetto Italiano. MUST! Skills tecniche richieste: -BACK END: Node.js possibilmente con Nest.js -FRONT END: Vue.js o React.js con TypeScript -DATABASE utilizzati: MongoDB, PostgreSQL -Metodologia di lavoro \u00e8 Agile/Scrum, si lavora ad obbiettivi. Andrai a lavorare in un team di persone altamente qualificate. La persona ideale \u00e8 un \u2026",
+            adref: "eyJhbGciOiJIUzI1NiJ9.eyJzIjoiTXFkMXRqaDE4Qkdaai1IdGc1SFZuUSIsImkiOiI1MzQ1MzU3NDI3In0._PLUun0tOGYaQKC9DQRP6ZoLCgdor0rNl8LilElHEoQ",
+            company: {
+                display_name: "Tenth Revolution Group"
+            },
+            location: {
+                display_name: "Italia",
+                area: ["Italia"]
+            },
+            redirect_url: "https://www.adzuna.it/land/ad/5345357427?se=Mqd1tjh18BGZj-Htg5HVnQ&utm_medium=api&utm_source=03484920&v=14149A09DB3CAFD9D8A8496C71E3F7813057BC7F",
+            category: {
+                tag: "unknown",
+                label: "Unknown",
+            },
+            created: "2025-08-09T13:54:44Z",
+            salary_is_predicted: "0"
+        }
+    ],
+    count: 0,
 };
+
 describe("RapidAPIAutomator Integration Tests", () => {
 
     describe("RetryHandler Integration Tests", () => {
@@ -41,7 +45,6 @@ describe("RapidAPIAutomator Integration Tests", () => {
         let collector;
         const jobTypesList = ["Software Engineer"];
         const options = {
-            location: "Italia",
             language: "it_IT"
         };
 
@@ -59,19 +62,18 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 await collection.drop();
             }
 
-            await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
+            await DataProviderService.create(AdzunaRequestSender.DATA_PROVIDER);
 
-            const sender = new RapidAPIRequestSender_v02();
-            const handler = new JobPostHandler(RapidAPIConverter, JobPostService);
-            collector = new RapidAPICollector(sender, handler);
+            const sender = new AdzunaRequestSender();
+            const handler = new JobPostHandler(AdzunaConverter, JobPostService);
+            collector = new AdzunaCollector(sender, handler);
             const retryHandler = new RetryWithDelay();
 
-            automator = new RapidAPIAutomator(
+            automator = new AdzunaAutomator(
                 new Set(["test-key1", "test-key2"]),
                 sender,
                 collector,
                 retryHandler,
-                {API_URL: "test-url", API_HOST: "test-host"}
             );
 
             jest.resetAllMocks();
@@ -87,7 +89,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
         it("should handle multiple job types with partial failures", async () => {
             const multiJobTypesList = ["Software Engineer", "Developer"];
 
-            axios.request
+            axios.get
                 .mockResolvedValueOnce({data: response_example}) // First job type succeeds
                 .mockRejectedValueOnce({response: {status: 500}}) // Second job type fails first try
                 .mockResolvedValueOnce({data: {...response_example, job_type: "Developer"}}); // Second job type succeeds on retry
@@ -96,11 +98,11 @@ describe("RapidAPIAutomator Integration Tests", () => {
 
             expect(results.length).toBe(2);
             expect(await JobPostService.getAll()).toHaveLength(1);
-            expect(axios.request).toHaveBeenCalledTimes(3);
+            expect(axios.get).toHaveBeenCalledTimes(3);
         }, 20000);
 
         it("should handle key rotation on rate limit errors", async () => {
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 429}}) // First key rate limited
                 .mockResolvedValueOnce({data: response_example}); // Second key works
 
@@ -118,7 +120,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 requestedPage: "page1"
             };
 
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({
                     response: {status: 500},
                     jobType: jobTypesList[0],
@@ -130,11 +132,11 @@ describe("RapidAPIAutomator Integration Tests", () => {
             await automator.automate(jobTypesList, optionsWithPage);
 
             // The requestedPage should be preserved during retries
-            expect(optionsWithPage.requestedPage).toBe("");
+            expect(optionsWithPage.requestedPage).toBe(1);
         });
 
         it("should handle multiple consecutive errors before success", async () => {
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 502}})
                 .mockRejectedValueOnce({response: {status: 503}})
@@ -144,11 +146,11 @@ describe("RapidAPIAutomator Integration Tests", () => {
 
             expect(results.length).toBe(1);
             expect(await JobPostService.getAll()).toHaveLength(1);
-            expect(axios.request).toHaveBeenCalledTimes(4);
+            expect(axios.get).toHaveBeenCalledTimes(4);
         });
 
         it("should handle all keys being invalidated", async () => {
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 401}}) // First key invalid
                 .mockRejectedValueOnce({response: {status: 401}}); // Second key invalid
 
@@ -162,7 +164,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
         it("should respect maximum retries even with valid keys", async () => {
             // Mock 6 consecutive 500 errors (exceeding 5 retries)
             for (let i = 0; i < 6; i++) {
-                axios.request.mockRejectedValueOnce({
+                axios.get.mockRejectedValueOnce({
                     response: {status: 500},
                     message: `Attempt ${i + 1} failed`
                 });
@@ -201,17 +203,17 @@ describe("RapidAPIAutomator Integration Tests", () => {
                 await collection.drop();
             }
 
-            await DataProviderService.create(RapidAPIRequestSender_v02.DATA_PROVIDER);
+            await DataProviderService.create(AdzunaRequestSender.DATA_PROVIDER);
 
             now = Date.now();
             jest.spyOn(Date, 'now').mockImplementation(() => now);
 
-            const sender = new RapidAPIRequestSender_v02();
-            const handler = new JobPostHandler(RapidAPIConverter, JobPostService);
-            collector = new RapidAPICollector(sender, handler);
+            const sender = new AdzunaRequestSender();
+            const handler = new JobPostHandler(AdzunaConverter, JobPostService);
+            collector = new AdzunaCollector(sender, handler);
             const retryHandler = new RetryWithDelay(3, [], null, 5000); // 5 second window
 
-            automator = new RapidAPIAutomator(
+            automator = new AdzunaAutomator(
                 new Set(["test-key1", "test-key2"]),
                 sender,
                 collector,
@@ -233,7 +235,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             const multiJobTypesList = ["Software Engineer", "Developer", "Data Scientist"];
 
             // First job type - causes errors
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
@@ -245,7 +247,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             now += 7000;
 
             // Next job types should start with fresh error count
-            axios.request
+            axios.get
                 .mockResolvedValueOnce({data: {...response_example, job_type: "Developer"}})
                 .mockResolvedValueOnce({data: {...response_example, job_type: "Data Scientist"}});
 
@@ -255,7 +257,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
 
         it("should accumulate errors across job types within window", async () => {
             // First job type fails
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
 
@@ -267,7 +269,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             now += 2000;
 
             // Second job type should consider previous errors
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 500}});
 
             await expect(automator.automate(["Developer"], options))
@@ -279,7 +281,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
 
         it("should handle mixed success/failure patterns with error window", async () => {
             // First request succeeds
-            axios.request
+            axios.get
                 .mockResolvedValueOnce({data: response_example});
 
             await automator.automate(["Software Engineer"], options);
@@ -289,7 +291,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             now += 2000;
 
             // Next requests fail
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
 
@@ -303,7 +305,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             now += 6000;
 
             // Should start fresh
-            axios.request
+            axios.get
                 .mockResolvedValueOnce({data: response_example});
 
             const results = await automator.automate(["Data Scientist"], options);
@@ -313,7 +315,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
 
         it("should handle error window with key rotation", async () => {
             // First key gets rate limited
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 429}});
 
             await expect(automator.automate(jobTypesList, options)).rejects.toThrow();
@@ -322,7 +324,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             // Within error window, second key works
             now += 2000;
 
-            axios.request
+            axios.get
                 .mockResolvedValueOnce({data: response_example});
 
             const results = await automator.automate(jobTypesList, options);
@@ -338,7 +340,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             };
 
             // First page request fails
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 500}})
                 .mockRejectedValueOnce({response: {status: 500}});
 
@@ -350,7 +352,7 @@ describe("RapidAPIAutomator Integration Tests", () => {
             now += 1000;
             optionsWithPagination.requestedPage = "page2";
 
-            axios.request
+            axios.get
                 .mockRejectedValueOnce({response: {status: 500}});
 
             await expect(automator.automate(jobTypesList, optionsWithPagination))

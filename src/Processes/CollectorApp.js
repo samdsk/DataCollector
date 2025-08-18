@@ -12,6 +12,10 @@ const RapidAPIResultsProcessor = require("../DataCollector/ResultProcessors/Rapi
 const {Scheduler} = require("../DataCollector/Schedulers/Scheduler");
 const CollectorEventEmitter = require("../DataCollector/Schedulers/CollectorEventEmitter");
 const DailyRunStrategy = require("../DataCollector/Schedulers/RunStrategy/DailyRunStrategy");
+const AdzunaCollectorProcess = require("../DataCollector/CollectorProcesses/AdzunaCollectorProcess");
+const AdzunaAutomatorFactory = require("../DataCollector/Factories/AdzunaAutomatorFactory");
+const AdzunaResultsProcessor = require("../DataCollector/ResultProcessors/AdzunaResultProcessor");
+const AdzunaConfigLoader = require("../DataCollector/ConfigLoaders/AdzunaConfigLoader");
 
 class CollectorApp {
     constructor() {
@@ -48,7 +52,16 @@ class CollectorApp {
             RapidAPIConfigLoader,
             this.schedulerManager
         );
+
+        const adzunaProcess = new AdzunaCollectorProcess(
+            AdzunaAutomatorFactory,
+            AdzunaResultsProcessor,
+            AdzunaConfigLoader,
+            this.schedulerManager
+        );
+
         this.processRegistry.register(rapidAPIProcess);
+        // this.processRegistry.register(adzunaProcess);
     }
 
     async shutdown() {

@@ -1,6 +1,6 @@
 const Logger = require("../Loggers/CollectorLogger");
 
-class RapidAPICollectorProcess {
+class AdzunaCollectorProcess {
     constructor(automatorFactory, resultProcessor, configLoader, schedulerManager) {
         this.automatorFactory = automatorFactory;
         this.resultProcessor = resultProcessor;
@@ -10,11 +10,11 @@ class RapidAPICollectorProcess {
 
     async execute() {
         try {
-            const jobList = await this.configLoader.loadJobTypes(process.env.RAPID_API_JOBTYPES_FILENAME);
-            const keys = await this.configLoader.loadKeys(process.env.RAPID_API_KEYS_FILENAME);
+            const jobList = await this.configLoader.loadJobTypes(process.env.ADZUNA_JOBTYPES_FILENAME);
+            const keys = await this.configLoader.loadKeys(process.env.ADZUNA_KEYS_FILENAME);
 
             if (!this.configLoader.validateConfiguration(jobList, keys)) {
-                throw new Error("RapidAPIProcess : Invalid configuration");
+                throw new Error("AdzunaProcess : Invalid configuration");
             }
 
             const automator = this.automatorFactory.createAutomator(keys);
@@ -23,19 +23,19 @@ class RapidAPICollectorProcess {
 
             if (this.schedulerManager && this.schedulerManager.scheduler) {
                 const nextRun = this.schedulerManager.scheduler.getNextExecutionTime();
-                Logger.info(`RapidAPIProcess : Collecting successfully finished. Next scheduled run is at: ${nextRun}`);
+                Logger.info(`AdzunaProcess : Collecting successfully finished. Next scheduled run is at: ${nextRun}`);
             }
 
             return await this.resultProcessor.process(results);
         } catch (error) {
-            Logger.info("RapidAPIProcess : Something went wrong in collection process");
+            Logger.info("AdzunaProcess : Something went wrong in collection process");
             Logger.error(error);
 
             if (this.schedulerManager && this.schedulerManager.scheduler) {
                 const nextRun = this.schedulerManager.scheduler.getNextExecutionTime();
-                Logger.info(`RapidAPIProcess : Skipping today's execution due to error. Next scheduled run is at: ${nextRun}`);
+                Logger.info(`AdzunaProcess : Skipping today's execution due to error. Next scheduled run is at: ${nextRun}`);
             } else {
-                Logger.info("RapidAPIProcess : Skipping today's execution due to error. Waiting for next scheduled run.");
+                Logger.info("AdzunaProcess : Skipping today's execution due to error. Waiting for next scheduled run.");
             }
 
             throw error;
@@ -43,4 +43,4 @@ class RapidAPICollectorProcess {
     }
 }
 
-module.exports = RapidAPICollectorProcess;
+module.exports = AdzunaCollectorProcess;

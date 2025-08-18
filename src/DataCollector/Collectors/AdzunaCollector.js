@@ -1,6 +1,6 @@
 const ResultLogger = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
-const {DATA_PROVIDER} = require("../RequestSenders/RapidAPIRequestSender_v02");
+const {DATA_PROVIDER} = require("../RequestSenders/AdzunaRequestSender");
 require("dotenv").config();
 
 const DEFAULT_LIMIT = 3;
@@ -11,7 +11,7 @@ const LIMIT = process.env.REQUEST_LIMIT || DEFAULT_LIMIT;
  */
 class Collector {
     /**
-     * @param {RapidAPIRequestSender_v02} RequestSender a Class with sendRequest method
+     * @param {AdzunaRequestSender} RequestSender a Class with sendRequest method
      * @param JobPostHandler
      */
     constructor(RequestSender, JobPostHandler) {
@@ -54,10 +54,12 @@ class Collector {
         // collecting actual response data for debug purposes
         let actualResponseData = [];
 
-        let jobCount = 10;
-        let requestedPage = RequestOptions?.requestedPage || "";
+        let receivedJobsCount = 0;
+        let requestedPage = RequestOptions?.requestedPage || 1;
         let insertedCount = 0;
         let requestCount = 0;
+        let totalAvailableJobs = 0;
+        let lastPageReceivedJobs = 0;
 
         try { // use REQUEST_LIMIT env variable to vary the limit
             do {
@@ -67,8 +69,15 @@ class Collector {
                     RequestOptions
                 );
 
+                // Track received jobs from this page
+                lastPageReceivedJobs = parseInt(data?.results?.length || 0, 10);
+                receivedJobsCount += lastPageReceivedJobs;
+
+                // Total available jobs from API (this doesn't decrease)
+                totalAvailableJobs = parseInt(data?.count || 0, 10);
+
                 insertedCount += await this.insertJobs(
-                    data.jobs,
+                    data.results,
                     JOB_TYPE,
                     data.language
                 );
@@ -76,24 +85,23 @@ class Collector {
                 if (process.env.LOG_LEVEL === "debug")
                     actualResponseData.push(data);
 
-                searchResults.jobs = searchResults.jobs.concat(data.jobs);
+                searchResults.jobs = searchResults.jobs.concat(data.results);
 
                 if (!searchResults?.location) searchResults.location = data.location;
                 if (!searchResults?.language) searchResults.language = data.language;
 
-                jobCount = parseInt(data.jobCount, 10);
                 requestCount++;
-
-                if (jobCount < 10 || requestCount >= LIMIT)
-                    requestedPage = "";
-                else
-                    requestedPage = data.nextPage;
-
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-            } while (jobCount >= 10 && requestCount < LIMIT);
+                requestedPage++;
+            } while (
+                lastPageReceivedJobs > 0 &&
+                requestCount < LIMIT &&
+                receivedJobsCount < totalAvailableJobs
+            );
         } catch (error) {
-            error.availableItems = jobCount;
+            error.availableItems = totalAvailableJobs;
+            error.receivedItems = receivedJobsCount;
+            error.currentPage = requestedPage;
+            error.lastPageReceivedJobs = lastPageReceivedJobs;
             throw error
         } finally {
             await this.logResults(searchResults);
@@ -119,6 +127,9 @@ class Collector {
             inserted: insertedCount,
             location: searchResults.location,
             language: searchResults.language,
+            totalAvailable: totalAvailableJobs,
+            receivedTotal: receivedJobsCount,
+            pagesProcessed: requestCount
         };
     }
 
