@@ -1,5 +1,6 @@
 const Logger = require("../Loggers/CollectorLogger");
 const MaxRetriesReachedError = require("../Errors/MaxRetriesReachedError");
+const TooManyBadRequestsError = require("../Errors/TooManyBadRequestsError");
 require("dotenv").config();
 
 
@@ -43,15 +44,26 @@ class RapidAPIAutomator {
             Logger.debug(`key: ***${key.slice(-4)} - job: ${jobType}`);
 
             const context = {key, jobType, options};
-            await this.retryHandler.execute(
-                async () => {
-                    const response = await this.collector.collect(jobType, options);
-                    Logger.debug(JSON.stringify(response));
-                    results.push(response);
-                    options.requestedPage = "";
-                },
-                context
-            );
+
+            try {
+                await this.retryHandler.execute(
+                    async () => {
+                        const response = await this.collector.collect(jobType, options);
+                        Logger.debug(JSON.stringify(response));
+                        results.push(response);
+                        options.requestedPage = "";
+                    },
+                    context
+                );
+            } catch (error) {
+                if (error instanceof TooManyBadRequestsError) {
+                    Logger.warn(`RapidAPIAutomator: Skipping job type '${jobType}' due to too many bad requests (${error.consecutiveErrors})`);
+                    options.requestedPage = ""; // Reset pagination
+                    continue;
+                }
+
+                throw error;
+            }
 
             if (this.config?.delayBetweenRequests) {
                 await new Promise(resolve => setTimeout(resolve, this.config.delayBetweenRequests));

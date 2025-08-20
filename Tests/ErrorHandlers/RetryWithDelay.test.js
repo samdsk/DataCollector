@@ -1,5 +1,6 @@
 const RetryWithDelay = require('../../src/DataCollector/ErrorHandlingStrategies/RetryWithDelay');
 const MaxRetriesReachedError = require('../../src/DataCollector/Errors/MaxRetriesReachedError');
+const TooManyBadRequestsError = require('../../src/DataCollector/Errors/TooManyBadRequestsError');
 
 describe('RetryWithDelay', () => {
     describe('constructor', () => {
@@ -225,4 +226,180 @@ describe('RetryWithDelay', () => {
             expect(retryHandler.consecutiveErrors).toBe(4);
         });
     });
+
+    describe("Bad Request Handling", () => {
+        let retryHandler;
+        let now;
+
+        beforeEach(() => {
+            now = Date.now();
+            jest.spyOn(Date, 'now').mockImplementation(() => now);
+            jest.spyOn(RetryWithDelay, 'sleep').mockImplementation(() => Promise.resolve());
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        it('should track 400 errors separately and throw TooManyBadRequestsError', async () => {
+            retryHandler = new RetryWithDelay(10, [], null, 60000, 3); // 3 bad request threshold
+            const operation = jest.fn().mockRejectedValue({ status: 400, message: "Bad Request" });
+            const context = { jobType: "Software Engineer" };
+
+            await expect(retryHandler.execute(operation, context))
+                .rejects
+                .toThrow(TooManyBadRequestsError);
+
+            expect(retryHandler.consecutive400Errors).toBe(3);
+            expect(operation).toHaveBeenCalledTimes(3);
+        });
+
+        it('should use default threshold of 5 bad requests', async () => {
+            retryHandler = new RetryWithDelay(); // Use default threshold
+            const operation = jest.fn().mockRejectedValue({ status: 400, message: "Bad Request" });
+            const context = { jobType: "Developer" };
+
+            await expect(retryHandler.execute(operation, context))
+                .rejects
+                .toThrow(TooManyBadRequestsError);
+
+            expect(retryHandler.consecutive400Errors).toBe(5);
+            expect(operation).toHaveBeenCalledTimes(5);
+        });
+
+        it('should handle 400 errors with response.status format', async () => {
+            retryHandler = new RetryWithDelay(10, [], null, 60000, 2);
+            const operation = jest.fn().mockRejectedValue({
+                response: { status: 400 },
+                message: "Bad Request from response"
+            });
+            const context = { jobType: "Data Scientist" };
+
+            await expect(retryHandler.execute(operation, context))
+                .rejects
+                .toThrow(TooManyBadRequestsError);
+
+            expect(retryHandler.consecutive400Errors).toBe(2);
+        });
+
+        it('should reset 400 error count on successful operation', async () => {
+            retryHandler = new RetryWithDelay(10, [], null, 60000, 3);
+            let attempts = 0;
+            const operation = jest.fn().mockImplementation(() => {
+                attempts++;
+                if (attempts < 3) {
+                    return Promise.reject({ status: 400, message: "Bad Request" });
+                }
+                return Promise.resolve("success");
+            });
+            const context = { jobType: "Software Engineer" };
+
+            const result = await retryHandler.execute(operation, context);
+
+            expect(result).toBe("success");
+            expect(retryHandler.consecutive400Errors).toBe(0);
+            expect(retryHandler.consecutiveErrors).toBe(2);
+        });
+
+        it('should not count other error codes toward 400 threshold', async () => {
+            retryHandler = new RetryWithDelay(10, [], null, 60000, 2);
+            const operation = jest.fn()
+                .mockRejectedValueOnce({ status: 500, message: "Server Error" })
+                .mockRejectedValueOnce({ status: 400, message: "Bad Request" })
+                .mockRejectedValueOnce({ status: 503, message: "Service Unavailable" })
+                .mockRejectedValueOnce({ status: 400, message: "Bad Request" })
+                .mockResolvedValueOnce("success");
+
+            const context = { jobType: "Software Engineer" };
+            const result = await retryHandler.execute(operation, context);
+
+            expect(result).toBe("success");
+            expect(retryHandler.consecutive400Errors).toBe(0); // Reset on success
+            expect(retryHandler.consecutiveErrors).toBe(4);
+
+        });
+
+        it('should include correct job type in TooManyBadRequestsError', async () => {
+            retryHandler = new RetryWithDelay(10, [], null, 60000, 2);
+            const operation = jest.fn().mockRejectedValue({ status: 400, message: "Bad Request" });
+            const context = { jobType: "UX Designer" };
+
+            try {
+                await retryHandler.execute(operation, context);
+                fail('Should have thrown TooManyBadRequestsError');
+            } catch (error) {
+                expect(error).toBeInstanceOf(TooManyBadRequestsError);
+                expect(error.jobType).toBe("UX Designer");
+                expect(error.consecutiveErrors).toBe(2);
+                expect(error.originalError.status).toBe(400);
+            }
+        });
+
+        it('should handle context without jobType', async () => {
+            retryHandler = new RetryWithDelay(10, [], null, 60000, 2);
+            const operation = jest.fn().mockRejectedValue({ status: 400, message: "Bad Request" });
+            const context = {}; // No jobType
+
+            try {
+                await retryHandler.execute(operation, context);
+                fail('Should have thrown TooManyBadRequestsError');
+            } catch (error) {
+                expect(error).toBeInstanceOf(TooManyBadRequestsError);
+                expect(error.jobType).toBeUndefined();
+            }
+        });
+
+        it('should reset 400 error count after error window expires', async () => {
+            retryHandler = new RetryWithDelay(10, [], null, 5000, 3); // 5 second window
+            const operation = jest.fn()
+                .mockRejectedValueOnce({ status: 400, message: "Bad Request" })
+                .mockRejectedValueOnce({ status: 400, message: "Bad Request" })
+                .mockResolvedValueOnce("success")
+                .mockResolvedValueOnce("success");
+
+            const context = { jobType: "Software Engineer" };
+
+            // First attempt - 2 bad requests
+            try {
+                await retryHandler.execute(operation, context);
+            } catch (error) {
+                expect(retryHandler.consecutive400Errors).toBe(2);
+            }
+
+            // Move beyond error window
+            now += 6000;
+
+            // Should reset and succeed
+            const result = await retryHandler.execute(operation, context);
+            expect(result).toBe("success");
+            expect(retryHandler.consecutive400Errors).toBe(0);
+        });
+
+        it('should prioritize TooManyBadRequestsError over MaxRetriesReachedError', async () => {
+            retryHandler = new RetryWithDelay(2, [], null, 60000, 2); // Low max retries, low 400 threshold
+            const operation = jest.fn().mockRejectedValue({ status: 400, message: "Bad Request" });
+            const context = { jobType: "Software Engineer" };
+
+            await expect(retryHandler.execute(operation, context))
+                .rejects
+                .toThrow(TooManyBadRequestsError);
+
+            expect(retryHandler.consecutive400Errors).toBe(2);
+            expect(retryHandler.consecutiveErrors).toBe(2);
+        });
+
+        it('should still throw MaxRetriesReachedError for non-400 errors', async () => {
+            retryHandler = new RetryWithDelay(2, [], null, 60000, 10); // High 400 threshold, low max retries
+            const operation = jest.fn().mockRejectedValue({ status: 500, message: "Server Error" });
+            const context = { jobType: "Software Engineer" };
+
+            await expect(retryHandler.execute(operation, context))
+                .rejects
+                .toThrow(MaxRetriesReachedError);
+
+            expect(retryHandler.consecutive400Errors).toBe(0);
+            expect(retryHandler.consecutiveErrors).toBe(2);
+        });
+    });
+
 });

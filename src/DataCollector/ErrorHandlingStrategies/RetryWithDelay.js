@@ -1,9 +1,11 @@
 const Logger = require("../Loggers/CollectorLogger");
 const MaxRetriesReachedError = require("../Errors/MaxRetriesReachedError");
+const TooManyBadRequestsError = require("../Errors/TooManyBadRequestsError");
 
 class RetryWithDelay {
     static DELAYS = [500, 1000, 2000, 5000, 10000];
-    static DEFAULT_ERROR_WINDOW = 60000; // 1 minute in milliseconds
+    static DEFAULT_ERROR_WINDOW = 60000;
+    static BAD_REQUEST_THRESHOLD = 5;
 
     /**
      * Initialize the RetryWithDelay class with configuration.
@@ -12,8 +14,10 @@ class RetryWithDelay {
      * @param {array} excludedErrorCodes - Error codes that should not trigger retries
      * @param {Function} onRetry - Optional callback invoked on each retry (e.g., logging).
      * @param {number} errorWindow - Time window in ms to track errors (default 1 minute)
+     * @param {number} badRequestThreshold - Number of 400 errors before skipping job type (default 10)
      */
-    constructor(maxRetries = 5, excludedErrorCodes = [], onRetry = null, errorWindow = RetryWithDelay.DEFAULT_ERROR_WINDOW) {
+    constructor(maxRetries = 5, excludedErrorCodes = [], onRetry = null, errorWindow = RetryWithDelay.DEFAULT_ERROR_WINDOW, badRequestThreshold = RetryWithDelay.BAD_REQUEST_THRESHOLD
+    ) {
         if (maxRetries < 0) throw new Error("maxRetries must be a positive integer");
         if (errorWindow < 0) throw new Error("errorWindow must be a positive integer");
 
@@ -21,8 +25,11 @@ class RetryWithDelay {
         this.excludedErrorCodes = excludedErrorCodes;
         this.onRetry = onRetry || this.defaultOnRetry;
         this.errorWindow = errorWindow;
+        this.badRequestThreshold = badRequestThreshold;
         this.lastErrorTime = null;
         this.consecutiveErrors = 0;
+        this.consecutive400Errors = 0;
+
     }
 
     static getDelay(retryCount) {
@@ -71,13 +78,16 @@ class RetryWithDelay {
         }
 
         try {
-            return await operation();
+            const result = await operation();
+            this.consecutive400Errors = 0;
+            return result;
         } catch (error) {
             const now = Date.now();
 
             if (this.shouldResetErrorCount()) {
                 Logger.warn("RetryWithDelay: Resetting exceeded error window after error: " + error.message + "");
                 this.consecutiveErrors = 0;
+                this.consecutive400Errors = 0;
             }
 
             if (!this.shouldRetry(error)) {
@@ -86,6 +96,18 @@ class RetryWithDelay {
 
             this.lastErrorTime = now;
             this.consecutiveErrors++;
+
+            // Track 400 errors specifically
+            if (error?.status === 400 || error?.response?.status === 400) {
+                this.consecutive400Errors++;
+                Logger.warn(`RetryWithDelay: Bad request error ${this.consecutive400Errors}/${this.badRequestThreshold} for job type: ${context.jobType || 'unknown'}`);
+
+                if (this.consecutive400Errors >= this.badRequestThreshold) {
+                    Logger.error(`RetryWithDelay: Too many bad requests (${this.consecutive400Errors}) for job type: ${context.jobType || 'unknown'}. Skipping job type.`);
+                    throw new TooManyBadRequestsError(this.consecutive400Errors, context.jobType, error);
+                }
+            }
+
 
             if (this.consecutiveErrors >= this.maxRetries) {
                 Logger.error(`RetryWithDelay: Maximum consecutive ${this.consecutiveErrors} retries reached. Error: ${error.message}`);
