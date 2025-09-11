@@ -9,16 +9,6 @@ class Application {
     async start() {
         try {
             await this.processManager.initialize();
-
-            // Logger.info('Testing message routing between processes...');
-            // const routingWorks = await this.processManager.testMessageRouting();
-            //
-            // if (!routingWorks) {
-            //     Logger.warn('Message routing test failed - system may not function properly');
-            // } else {
-            //     Logger.info('Message routing test successful!');
-            // }
-
         } catch (error) {
             Logger.error(error);
             await this.shutdown();
