@@ -16,6 +16,8 @@ const AdzunaCollectorProcess = require("../DataCollector/CollectorProcesses/Adzu
 const AdzunaAutomatorFactory = require("../DataCollector/Factories/AdzunaAutomatorFactory");
 const AdzunaResultsProcessor = require("../DataCollector/ResultProcessors/AdzunaResultProcessor");
 const AdzunaConfigLoader = require("../DataCollector/ConfigLoaders/AdzunaConfigLoader");
+const JSearchCollectorProcess = require("../DataCollector/CollectorProcesses/JSearchCollectorProcess");
+const JSearchAutomatorFactory = require("../DataCollector/Factories/JSearchAutomatorFactory");
 
 class CollectorApp {
     constructor() {
@@ -60,8 +62,17 @@ class CollectorApp {
             this.schedulerManager
         );
 
-        this.processRegistry.register(rapidAPIProcess);
+        const jSearchProcess = new JSearchCollectorProcess(
+            JSearchAutomatorFactory,
+            DefaultResultsProcessor,
+            RapidAPIConfigLoader,
+            this.schedulerManager
+        )
+
+        // this.processRegistry.register(rapidAPIProcess);
         // this.processRegistry.register(adzunaProcess);
+
+        this.processRegistry.register(jSearchProcess);
     }
 
     async shutdown() {
