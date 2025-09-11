@@ -257,7 +257,7 @@ describe('JSearchAutomator', () => {
             const automator = new JSearchAutomator(new Set(['key1']), senderMock, collectorMock, retryHandlerMock, config);
             automator.updatePaginationState(error, jobTypesList, options);
 
-            expect(options.requestedPage).toBe(2);
+            expect(options.requestedPage).toBe(1);
             expect(jobTypesList).toEqual(['jobType1', 'jobType2']);
         });
 

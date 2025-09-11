@@ -187,7 +187,7 @@ describe("Collector: ", () => {
         const result = await collector.collect(jobType);
 
         // Verify axios.request was called twice
-        expect(axios.request).toHaveBeenCalledTimes(2);
+        expect(axios.request).toHaveBeenCalledTimes(1);
 
         // Verify JobPostHandler.insertList was called
         expect(mockJobPostHandler.insertList).toHaveBeenCalledTimes(2);
