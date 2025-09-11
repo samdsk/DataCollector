@@ -69,7 +69,7 @@ class Collector {
                 );
 
                 insertedCount += await this.insertJobs(
-                    data.jobs,
+                    data.data,
                     JOB_TYPE,
                     data.language
                 );
