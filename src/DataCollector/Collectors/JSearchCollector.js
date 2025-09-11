@@ -1,10 +1,13 @@
+
 const ResultLogger = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
 const {DATA_PROVIDER} = require("../RequestSenders/JSearchRequestSender");
 require("dotenv").config();
 
-const DEFAULT_LIMIT = 3;
-const LIMIT = process.env.REQUEST_LIMIT || DEFAULT_LIMIT;
+const DEFAULT_LIMIT = 1;
+const LIMIT = DEFAULT_LIMIT;
+const DEFAULT_NUM_PAGES = 10;
+const NUM_PAGES = process.env.NUM_PAGES || DEFAULT_NUM_PAGES;
 
 /**
  * collects job descriptions from Rapid API's Job Search API
@@ -54,47 +57,37 @@ class Collector {
         // collecting actual response data for debug purposes
         let actualResponseData = [];
 
-        let jobCount = 10;
         let requestedPage = RequestOptions?.requestedPage || 1;
         let insertedCount = 0;
-        let requestCount = 0;
+        let lastDataSize = 0;
 
-        try { // use REQUEST_LIMIT env variable to vary the limit
-            do {
-                let data = await this.RequestSender.sendRequest(
-                    JOB_TYPE,
-                    requestedPage,
-                    LIMIT,
-                    RequestOptions
-                );
+        try {
+            // Single request with multiple pages (num_pages = 10 for 2x cost efficiency)
+            let data = await this.RequestSender.sendRequest(
+                JOB_TYPE,
+                requestedPage,
+                NUM_PAGES,
+                RequestOptions
+            );
 
-                insertedCount += await this.insertJobs(
-                    data.data,
-                    JOB_TYPE,
-                    data.language
-                );
+            lastDataSize = data?.data?.length || 0;
 
-                if (process.env.LOG_LEVEL === "debug")
-                    actualResponseData.push(data);
+            insertedCount += await this.insertJobs(
+                data.data,
+                JOB_TYPE,
+                data.language
+            );
 
-                searchResults.jobs = searchResults.jobs.concat(data.data);
+            if (process.env.LOG_LEVEL === "debug")
+                actualResponseData.push(data);
 
-                if (!searchResults?.location) searchResults.location = data?.parameters?.country;
-                if (!searchResults?.language) searchResults.language = data?.parameters?.language;
+            searchResults.jobs = searchResults.jobs.concat(data.data);
 
-                jobCount = parseInt(data?.data?.length, 10);
-                requestCount++;
+            if (!searchResults?.location) searchResults.location = data?.parameters?.country;
+            if (!searchResults?.language) searchResults.language = data?.parameters?.language;
 
-                if (jobCount < 10 || requestCount >= LIMIT)
-                    requestedPage = 1;
-                else
-                    requestedPage = data?.parameters?.page + 1;
-
-                await new Promise(resolve => setTimeout(resolve, 1000));
-
-            } while (jobCount >= 10 && requestCount < LIMIT);
         } catch (error) {
-            error.availableItems = jobCount;
+            error.availableItems = lastDataSize;
             throw error
         } finally {
             await this.logResults(searchResults);

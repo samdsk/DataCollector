@@ -74,11 +74,7 @@ class JSearchAutomator {
     }
 
     updatePaginationState(error, jobTypesList, options) {
-        if (jobTypesList[0] === error.jobType) {
-            options.requestedPage = error?.availableItems < 10 ? 1 : error.requestedPage;
-        } else {
-            options.requestedPage = 1;
-        }
+        options.requestedPage = 1;
 
         const indexOfJob = jobTypesList.indexOf(error.jobType);
         if (indexOfJob > 0) {
