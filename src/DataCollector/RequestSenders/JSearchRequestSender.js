@@ -1,7 +1,7 @@
 const axios = require("axios");
 require("dotenv").config();
 const Logger = require("../Loggers/CollectorLogger");
-const RapidAPICollectionError = require("../Errors/RapidAPICollectionError");
+const JSearchCollectionError = require("../Errors/JSearchCollectionError");
 const LanguageUtils = require("../Utils/LanguageUtils");
 
 class JSearchRequestSender {
@@ -86,7 +86,7 @@ class JSearchRequestSender {
      * @returns {Error} The enriched error.
      */
     formatError(error, jobType, requestedPage) {
-        return new RapidAPICollectionError(error.message, {
+        return new JSearchCollectionError(error.message, {
             status: error?.response?.status,
             jobType: jobType,
             requestedPage: requestedPage,
