@@ -1,4 +1,4 @@
-const RapidAPIResultsProcessor = require('../../src/DataCollector/ResultProcessors/RapidAPIResultProcessor');
+const DefaultResultsProcessor = require('../../src/DataCollector/ResultProcessors/DefaultResultProcessor');
 
 // Mock the logger dependencies
 jest.mock('../../src/DataCollector/Loggers/ResultsLogger', () => ({
@@ -9,7 +9,7 @@ jest.mock('../../src/DataCollector/Loggers/CollectorLogger', () => ({
     info: jest.fn()
 }));
 
-describe('RapidAPIResultsProcessor', () => {
+describe('DefaultResultsProcessor', () => {
     describe('generateSummaryReport', () => {
         let consoleLogSpy;
 
@@ -59,7 +59,7 @@ describe('RapidAPIResultsProcessor', () => {
         ];
 
         test('should print report header correctly', () => {
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('\n' + '='.repeat(90));
             expect(consoleLogSpy).toHaveBeenCalledWith('DATA COLLECTION SUMMARY REPORT');
@@ -67,7 +67,7 @@ describe('RapidAPIResultsProcessor', () => {
         });
 
         test('should display correct metadata', () => {
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('Geographic Scope: Italia');
             expect(consoleLogSpy).toHaveBeenCalledWith('Language Locale: it_IT');
@@ -75,7 +75,7 @@ describe('RapidAPIResultsProcessor', () => {
         });
 
         test('should calculate and display correct totals', () => {
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             // Total collected: 0 + 8 + 20 + 10 = 38
             // Total inserted: 0 + 0 + 4 + 10 = 14
@@ -87,21 +87,21 @@ describe('RapidAPIResultsProcessor', () => {
         });
 
         test('should display executive summary section', () => {
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('EXECUTIVE SUMMARY');
             expect(consoleLogSpy).toHaveBeenCalledWith('-'.repeat(90));
         });
 
         test('should display detailed category analysis table', () => {
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('DETAILED CATEGORY ANALYSIS');
             expect(consoleLogSpy).toHaveBeenCalledWith('Category          | Collected | Processed | Efficiency | Status');
         });
 
         test('should correctly format category rows', () => {
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             // Test specific formatted rows
             expect(consoleLogSpy).toHaveBeenCalledWith('maestro          |         0 |         0 |       0.0% | No Data');
@@ -113,7 +113,7 @@ describe('RapidAPIResultsProcessor', () => {
         test('should handle empty results array', () => {
             const emptyResults = [];
 
-            RapidAPIResultsProcessor.generateSummaryReport(emptyResults);
+            DefaultResultsProcessor.generateSummaryReport(emptyResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('Geographic Scope: N/A');
             expect(consoleLogSpy).toHaveBeenCalledWith('Language Locale: N/A');
@@ -133,7 +133,7 @@ describe('RapidAPIResultsProcessor', () => {
                 }
             ];
 
-            RapidAPIResultsProcessor.generateSummaryReport(zeroCollectedResults);
+            DefaultResultsProcessor.generateSummaryReport(zeroCollectedResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('Processing Efficiency: 0.00%');
             expect(consoleLogSpy).toHaveBeenCalledWith('test             |         0 |         0 |       0.0% | No Data');
@@ -141,21 +141,21 @@ describe('RapidAPIResultsProcessor', () => {
 
         test('should display data quality score', () => {
             // Mock the calculateDataQualityScore method
-            const originalCalculateDataQualityScore = RapidAPIResultsProcessor.calculateDataQualityScore;
-            RapidAPIResultsProcessor.calculateDataQualityScore = jest.fn().mockReturnValue(7.5);
+            const originalCalculateDataQualityScore = DefaultResultsProcessor.calculateDataQualityScore;
+            DefaultResultsProcessor.calculateDataQualityScore = jest.fn().mockReturnValue(7.5);
 
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('Data Quality Score: 7.50/10.00');
 
             // Restore original method
-            RapidAPIResultsProcessor.calculateDataQualityScore = originalCalculateDataQualityScore;
+            DefaultResultsProcessor.calculateDataQualityScore = originalCalculateDataQualityScore;
         });
 
         test('should call console.log with timestamp', () => {
             const dateSpy = jest.spyOn(Date.prototype, 'toISOString').mockReturnValue('2024-10-06T10:40:00.000Z');
 
-            RapidAPIResultsProcessor.generateSummaryReport(mockResults);
+            DefaultResultsProcessor.generateSummaryReport(mockResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith('Report Generated: 2024-10-06T10:40:00.000Z');
 
@@ -170,7 +170,7 @@ describe('RapidAPIResultsProcessor', () => {
                 { job_type: "complete", collected: 8, inserted: 8, location: "Test", language: "en" }
             ];
 
-            RapidAPIResultsProcessor.generateSummaryReport(statusTestResults);
+            DefaultResultsProcessor.generateSummaryReport(statusTestResults);
 
             expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('| No Data'));
             expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('| Review Req.'));
