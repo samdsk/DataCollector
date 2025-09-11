@@ -39,7 +39,7 @@ class JSearchConverter {
         const links = [];
 
         // Always use Google Jobs link as the primary source
-        if (job.job_google_link) {
+        if (job && job.job_google_link) {
             links.push({
                 source: 'Google Jobs',
                 url: job.job_google_link
