@@ -1,17 +1,16 @@
 const {logResultsToJSONFile} = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
-const RapidAPIRequestSender_v02 = require("../RequestSenders/RapidAPIRequestSender_v02");
 
-class RapidAPIResultsProcessor {
+class DefaultResultsProcessor {
     static async process(results) {
         Logger.info("Logging results summary");
         await logResultsToJSONFile("summary", new Date(Date.now()), results);
         this.generateSummaryReport(results);
     }
 
-    static generateSummaryReport(results) {
+    static generateSummaryReport(results, dataProvider) {
         Logger.info('\n' + '='.repeat(90));
-        Logger.info(`DATA COLLECTION SUMMARY REPORT - ${RapidAPIRequestSender_v02.DATA_PROVIDER}`);
+        Logger.info(`DATA COLLECTION SUMMARY REPORT - ${dataProvider}`);
         Logger.info('='.repeat(90));
 
         // Extract metadata
@@ -87,4 +86,4 @@ class RapidAPIResultsProcessor {
     }
 }
 
-module.exports = RapidAPIResultsProcessor;
+module.exports = DefaultResultsProcessor;
