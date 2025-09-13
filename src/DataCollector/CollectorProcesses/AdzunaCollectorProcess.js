@@ -1,4 +1,5 @@
 const Logger = require("../Loggers/CollectorLogger");
+const AdzunaRequestSender = require("../RequestSenders/AdzunaRequestSender");
 
 class AdzunaCollectorProcess {
     constructor(automatorFactory, resultProcessor, configLoader, schedulerManager) {
@@ -26,7 +27,7 @@ class AdzunaCollectorProcess {
                 Logger.info(`AdzunaProcess : Collecting successfully finished. Next scheduled run is at: ${nextRun}`);
             }
 
-            return await this.resultProcessor.process(results);
+            return await this.resultProcessor.process(results, AdzunaRequestSender.DATA_PROVIDER);
         } catch (error) {
             Logger.info("AdzunaProcess : Something went wrong in collection process");
             Logger.error(error);
