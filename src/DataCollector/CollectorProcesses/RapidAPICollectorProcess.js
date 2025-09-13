@@ -1,4 +1,5 @@
 const Logger = require("../Loggers/CollectorLogger");
+const RapiRequestSender = require("../RequestSenders/AdzunaRequestSender");
 
 class RapidAPICollectorProcess {
     constructor(automatorFactory, resultProcessor, configLoader, schedulerManager) {
@@ -26,7 +27,7 @@ class RapidAPICollectorProcess {
                 Logger.info(`RapidAPIProcess : Collecting successfully finished. Next scheduled run is at: ${nextRun}`);
             }
 
-            return await this.resultProcessor.process(results);
+            return await this.resultProcessor.process(results, RapiRequestSender.DATA_PROVIDER);
         } catch (error) {
             Logger.info("RapidAPIProcess : Something went wrong in collection process");
             Logger.error(error);

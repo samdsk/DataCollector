@@ -2,10 +2,10 @@ const {logResultsToJSONFile} = require("../Loggers/ResultsLogger");
 const Logger = require("../Loggers/CollectorLogger");
 
 class DefaultResultsProcessor {
-    static async process(results) {
+    static async process(results, dataProvider) {
         Logger.info("Logging results summary");
         await logResultsToJSONFile("summary", new Date(Date.now()), results);
-        this.generateSummaryReport(results);
+        this.generateSummaryReport(results, dataProvider);
     }
 
     static generateSummaryReport(results, dataProvider) {
