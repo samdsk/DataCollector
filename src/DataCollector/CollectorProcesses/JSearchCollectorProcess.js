@@ -1,4 +1,5 @@
 const Logger = require("../Loggers/CollectorLogger");
+const JSearchProcess = require("../RequestSenders/AdzunaRequestSender");
 
 class JSearchCollectorProcess {
     constructor(automatorFactory, resultProcessor, configLoader, schedulerManager) {
@@ -26,7 +27,7 @@ class JSearchCollectorProcess {
                 Logger.info(`JSearchProcess : Collecting successfully finished. Next scheduled run is at: ${nextRun}`);
             }
 
-            return await this.resultProcessor.process(results);
+            return await this.resultProcessor.process(results, JSearchProcess.DATA_PROVIDER);
         } catch (error) {
             Logger.info("JSearchProcess : Something went wrong in collection process");
             Logger.error(error);
