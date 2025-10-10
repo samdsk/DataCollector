@@ -12,6 +12,7 @@ const db_connect = async (DB_URL) => {
     await mongoose.connection.db.createCollection("outputllms", {
         viewOn: "annotations",
         pipeline: pipeline,
+        collation: { locale: "simple" },
     });
 
     Logger.info(`DB connected.`);
