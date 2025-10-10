@@ -21,6 +21,7 @@ const searchMultiple = async (req, MODEL) => {
     const sort = {};
     sort[sortBy] = order === "desc" ? -1 : 1;
 
+    // Build projection stage - only if fields are specified
     let projectStage = null;
     if (fields) {
         projectStage = {};
@@ -39,24 +40,49 @@ const searchMultiple = async (req, MODEL) => {
         pipeline.push({ $match: matchStage });
     }
 
+    // Create results pipeline stages
+    const resultsPipeline = [
+        { $sort: sort },
+        { $skip: (page - 1) * limit },
+        { $limit: limit }
+    ];
+
+    // Only add project stage if it's not null
+    if (projectStage !== null) {
+        resultsPipeline.push({ $project: projectStage });
+    }
+
     // Add facet to get both count and results in one query
     pipeline.push({
         $facet: {
             totalCount: [{ $count: "count" }],
-            results: [
-                { $sort: sort },
-                { $skip: (page - 1) * limit },
-                { $limit: limit },
-                { $project: projectStage }
-            ]
+            results: resultsPipeline
         }
     });
 
-    const aggregationResult = await MODEL.aggregate(pipeline, { allowDiskUse: true });
+    // Filter out any null or undefined values from the pipeline
+    const cleanPipeline = pipeline.map(stage => {
+        if (stage && typeof stage === 'object') {
+            // Remove null/undefined values from each stage
+            return JSON.parse(JSON.stringify(stage, (key, value) => {
+                return value === null || value === undefined ? undefined : value;
+            }));
+        }
+        return stage;
+    }).filter(stage => stage !== null && stage !== undefined);
 
-    const total_documents = aggregationResult[0].totalCount[0]?.count || 0;
+    const aggregationResult = await MODEL.aggregate(cleanPipeline, { allowDiskUse: true });
+
+    const total_documents = aggregationResult[0]?.totalCount[0]?.count || 0;
     const total_pages = Math.ceil(total_documents / limit);
-    const results = aggregationResult[0].results || [];
+    const results = aggregationResult[0]?.results || [];
+
+    // Clean up results - only remove __v, keep __t for discriminators
+    results.forEach((element) => {
+        if (element) {
+            element.__v = undefined;
+        }
+    });
 
     return {
         success: true,
