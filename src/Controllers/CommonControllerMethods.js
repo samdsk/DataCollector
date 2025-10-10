@@ -13,30 +13,50 @@ const searchMultiple = async (req, MODEL) => {
     const page = parseInt(searchParams.page) || 1;
     const limit = parseInt(searchParams.limit) || 20;
 
-    const query = {};
-    let select = fields.replaceAll(",", " ");
-
+    const matchStage = {};
     if (filterBy && filterValue) {
-        query[filterBy] = {$regex: filterValue, $options: "i"};
+        matchStage[filterBy] = {$regex: filterValue, $options: "i"};
     }
 
     const sort = {};
     sort[sortBy] = order === "desc" ? -1 : 1;
 
-    const total_documents = await MODEL.countDocuments(query);
-    const total_pages = Math.ceil(total_documents / limit);
+    let projectStage = null;
+    if (fields) {
+        projectStage = {};
+        const fieldList = fields.split(',').map(f => f.trim());
+        for (const field of fieldList) {
+            if (field) {
+                projectStage[field] = 1;
+            }
+        }
+    }
 
-    const results = await MODEL.find(query)
-        .sort(sort)
-        .skip((page - 1) * limit)
-        .limit(limit)
-        .select(select)
-        .lean();
+    // Build aggregation pipeline
+    const pipeline = [];
 
-    results.forEach((element) => {
-        element.__t = undefined;
-        element.__v = undefined;
+    if (Object.keys(matchStage).length > 0) {
+        pipeline.push({ $match: matchStage });
+    }
+
+    // Add facet to get both count and results in one query
+    pipeline.push({
+        $facet: {
+            totalCount: [{ $count: "count" }],
+            results: [
+                { $sort: sort },
+                { $skip: (page - 1) * limit },
+                { $limit: limit },
+                { $project: projectStage }
+            ]
+        }
     });
+
+    const aggregationResult = await MODEL.aggregate(pipeline, { allowDiskUse: true });
+
+    const total_documents = aggregationResult[0].totalCount[0]?.count || 0;
+    const total_pages = Math.ceil(total_documents / limit);
+    const results = aggregationResult[0].results || [];
 
     return {
         success: true,
