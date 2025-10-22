@@ -12,9 +12,9 @@ class RapidAPIRequestSender {
     static DATA_PROVIDER = "RapidAPI";
 
     constructor(API_KEY, options) {
-        this.API_KEY = API_KEY || process.env.API_KEY;
-        this.API_URL = options?.API_URL || process.env.API_URL;
-        this.API_HOST = options?.API_HOST || process.env.API_HOST;
+        this.API_KEY = API_KEY || process.env.RAPID_API_API_KEY;
+        this.API_URL = options?.API_URL || process.env.RAPID_API_API_URL;
+        this.API_HOST = options?.API_HOST || process.env.RAPID_API_API_HOST;
     }
 
     /**
