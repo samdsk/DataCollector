@@ -1,9 +1,10 @@
 const Logger = require("./Loggers/CollectorLogger");
-
+const CollectorRunConfig = require("./ConfigLoaders/CollectorRunConfig");
 
 class CollectorProcessRegistry {
     constructor() {
         this.processes = [];
+        this.config = new CollectorRunConfig();
     }
 
     register(process) {
@@ -16,10 +17,20 @@ class CollectorProcessRegistry {
     }
 
     async executeAll() {
-        Logger.info(`Executing ${this.processes.length} registered processes`);
+        this.reloadConfig();
+
+        const enabledProcesses = this.processes.filter(process => {
+            const isEnabled = this.config.isEnabled(process.constructor.name);
+            if (!isEnabled) {
+                Logger.info(`Skipping disabled process: ${process.constructor.name}`);
+            }
+            return isEnabled;
+        });
+
+        Logger.info(`Executing ${enabledProcesses.length} enabled processes (${this.processes.length - enabledProcesses.length} skipped)`);
         const results = [];
 
-        for (const process of this.processes) {
+        for (const process of enabledProcesses) {
             try {
                 Logger.info(`Executing process: ${process.constructor.name}`);
                 const result = await process.execute();
@@ -39,6 +50,18 @@ class CollectorProcessRegistry {
         }
 
         return results;
+    }
+
+    reloadConfig() {
+        this.config.reloadConfig();
+        Logger.info('Configuration reloaded');
+    }
+
+    getProcessStatus() {
+        return this.processes.map(process => ({
+            name: process.constructor.name,
+            enabled: this.config.isEnabled(process.constructor.name)
+        }));
     }
 }
 

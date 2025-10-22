@@ -47,7 +47,6 @@ class CollectorApp {
     }
 
     registerProcesses() {
-        // Register RapidAPI collection process
         const rapidAPIProcess = new RapidAPICollectorProcess(
             RapidAPIAutomatorFactory,
             DefaultResultsProcessor,
@@ -55,12 +54,12 @@ class CollectorApp {
             this.schedulerManager
         );
 
-        const adzunaProcess = new AdzunaCollectorProcess(
-            AdzunaAutomatorFactory,
-            AdzunaResultsProcessor,
-            AdzunaConfigLoader,
-            this.schedulerManager
-        );
+        // const adzunaProcess = new AdzunaCollectorProcess(
+        //     AdzunaAutomatorFactory,
+        //     AdzunaResultsProcessor,
+        //     AdzunaConfigLoader,
+        //     this.schedulerManager
+        // );
 
         const jSearchProcess = new JSearchCollectorProcess(
             JSearchAutomatorFactory,
@@ -69,9 +68,8 @@ class CollectorApp {
             this.schedulerManager
         )
 
-        // this.processRegistry.register(rapidAPIProcess);
+        this.processRegistry.register(rapidAPIProcess);
         // this.processRegistry.register(adzunaProcess);
-
         this.processRegistry.register(jSearchProcess);
     }
 
