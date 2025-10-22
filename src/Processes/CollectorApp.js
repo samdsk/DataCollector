@@ -54,12 +54,12 @@ class CollectorApp {
             this.schedulerManager
         );
 
-        const adzunaProcess = new AdzunaCollectorProcess(
-            AdzunaAutomatorFactory,
-            AdzunaResultsProcessor,
-            AdzunaConfigLoader,
-            this.schedulerManager
-        );
+        // const adzunaProcess = new AdzunaCollectorProcess(
+        //     AdzunaAutomatorFactory,
+        //     AdzunaResultsProcessor,
+        //     AdzunaConfigLoader,
+        //     this.schedulerManager
+        // );
 
         const jSearchProcess = new JSearchCollectorProcess(
             JSearchAutomatorFactory,
@@ -69,7 +69,7 @@ class CollectorApp {
         )
 
         this.processRegistry.register(rapidAPIProcess);
-        this.processRegistry.register(adzunaProcess);
+        // this.processRegistry.register(adzunaProcess);
         this.processRegistry.register(jSearchProcess);
     }
 
