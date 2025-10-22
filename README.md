@@ -27,6 +27,19 @@ config/
 
 #### `config/RapidAPI/jobtypelist.json` Array of job types to search for:
 
+#### `config/collector_run_config.json` Optional config file to enable/disable collector processes at runtime:
+
+This file will be reloaded at the beginning of each run.
+
+```aiignore
+Example:
+{
+  "RapidAPICollectorProcess": false,
+  "JSearchCollectorProcess": true,
+  "AdzunaCollectorProcess": false
+}
+```
+
 ### Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
