@@ -2,6 +2,7 @@ const axios = require('axios');
 const Logger = require("../Loggers/CollectorLogger");
 const AdzunaCollectionError = require("../Errors/AdzunaCollectionError");
 const {getCountryCode} = require("../Utils/LanguageUtils");
+require("dotenv").config();
 
 class AdzunaRequestSender {
     static DATA_PROVIDER = "Adzuna";
